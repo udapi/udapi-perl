@@ -1,2 +1,2 @@
-# udapi-perl
-Perl framework for processing Universal Dependencies data
+# Udapi Perl
+Perl framework for processing [Universal Dependencies](http://universaldependencies.org) data
