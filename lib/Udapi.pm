@@ -1,25 +1,38 @@
-# NAME
+package Udapi;
+use 5.010;
+use strict;
+use warnings;
+use version; our $VERSION = version->declare("v0.1.3");
+
+1;
+__END__
+
+=encoding utf-8
+
+=head1 NAME
 
 Udapi - a framework for processing Universal Dependencies
 
-# SYNOPSIS
+=head1 SYNOPSIS
 
     # from command line
     cat in.conllu | udapi.pl Read::CoNLLU My::NLP::Block Another::Block \
                              Write::CoNLLU > out.conllu
 
-# DESCRIPTION
+=head1 DESCRIPTION
 
 Udapi is API for processing UD (Universal Dependencies) data.
-See [http://udapi.github.io](http://udapi.github.io) and [http://universaldependencies.org](http://universaldependencies.org).
+See L<http://udapi.github.io> and L<http://universaldependencies.org>.
 This distribution is a Perl implementation of the Udapi framework.
 
-# AUTHOR
+=head1 AUTHOR
 
-Martin Popel <popel@ufal.mff.cuni.cz>
+Martin Popel E<lt>popel@ufal.mff.cuni.czE<gt>
 
-# COPYRIGHT AND LICENSE
+=head1 COPYRIGHT AND LICENSE
 
-Copyright © 2016 by Institute of Formal and Applied Linguistics, Charles University in Prague
+Copyright Â© 2016 by Institute of Formal and Applied Linguistics, Charles University in Prague
 
 This module is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
+
+=cut
