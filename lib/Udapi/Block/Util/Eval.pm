@@ -29,19 +29,17 @@ sub process_document {
     }
 
     if ( $self->bundle || $self->tree || $self->node ) {
-        my $bundleNo = 1;
         foreach my $bundle ( $doc->bundles() ) {
-            if ($self->_should_process_bundle($bundle, $bundleNo)){
-                $self->process_bundle($bundle, $bundleNo);
+            if ($self->_should_process_bundle($bundle)){
+                $self->process_bundle($bundle);
             }
-            $bundleNo++;
         }
     }
     return;
 }
 
 sub process_bundle {
-    my ( $self, $bundle, $bundleNo ) = @_;
+    my ( $self, $bundle ) = @_;
 
     # Extract variables $document ($doc), so they can be used in eval code
     my $doc      = $bundle->document();
@@ -56,14 +54,14 @@ sub process_bundle {
         my @trees = $bundle->trees();
         foreach my $tree (@trees) {
             next if !$self->_should_process_tree($tree);
-            $self->process_tree( $tree, $bundleNo );
+            $self->process_tree( $tree );
         }
     }
     return;
 }
 
 sub process_tree {
-    my ( $self, $tree, $bundleNo ) = @_;
+    my ( $self, $tree ) = @_;
 
     # Extract variables $bundle, $document ($doc), so they can be used in eval code
     my $bundle   = $tree->bundle;

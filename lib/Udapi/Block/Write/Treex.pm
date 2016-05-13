@@ -2,7 +2,7 @@ package Udapi::Block::Write::Treex;
 use Udapi::Core::Common;
 extends 'Udapi::Core::Block';
 
-#has_ro compress => ( isa => Bool, default => 1, doc => 'create *.treex.gz files');
+#has_ro compress => ( isa => Bool, default => 1, doc => 'create *.conllu.gz files');
 
 before process_document => sub {
     my ($self, $doc) = @_;
@@ -20,35 +20,27 @@ END
 
 after process_document => sub {
     my ($self, $doc) = @_;
-    print << 'END';
-  </bundles>
-</treex_document>
-END
+    say "  </bundles>\n</treex_document>\n";
     return;
 };
 
 before process_bundle => sub {
-    my ( $self, $bundle, $bundleNo ) = @_;
-    print << "END";
-    <LM id="s$bundleNo">
-      <zones>
-END
+    my ( $self, $bundle ) = @_;
+    say '<LM id="s' . $bundle->number . "\">\n      <zones>";
 };
 
 after process_bundle => sub {
-    my ( $self, $bundle, $bundleNo ) = @_;
-    print << 'END';
-      </zones>
-    </LM>
-END
+    my ( $self, $bundle ) = @_;
+    say "      </zones>\n    </LM>";
 };
 
 sub process_tree {
-    my ($self, $tree, $bundleNo) = @_;
-    my $root_id = "a-$bundleNo";
+    my ($self, $tree) = @_;
+    my $bundle_number = $tree->bundle->number;
+    my $root_id = "a-$bundle_number";
     my $sentence = $tree->sentence;
     my $language = 'und'; # TODO + selector
-    my $tree_id = "s$bundleNo-$language";
+    my $tree_id = "s$bundle_number-$language";
     my $in = ' ' x 8;
     say "$in<zone language='$language'>";
     say "$in  <sentence>$sentence</sentence>" if defined $sentence;
@@ -65,12 +57,14 @@ sub print_subtree {
     say "$indent<LM id='${tree_id}-n$ord'>" if !$node->is_root;
     my $in = $indent.'  ';
     say "$in<ord>$ord</ord>";
-    say "$in<form>$form</form>" if defined $form;
-    say "$in<lemma>$lemma</lemma>" if defined $lemma;
-    say "$in<tag>$upos</tag>" if defined $upos;
-    say "$in<deprel>$deprel</deprel>" if defined $deprel;
-    $xpos ||= ''; $feats ||= '';
-    say "$in<conll><pos>$xpos</pos><feat>$feats</feat></conll>" if !$node->is_root;
+    if (!$node->is_root){
+        say "$in<form>$form</form>" if defined $form;
+        say "$in<lemma>$lemma</lemma>" if defined $lemma;
+        say "$in<tag>$upos</tag>" if defined $upos;
+        say "$in<deprel>$deprel</deprel>" if defined $deprel;
+        $xpos ||= ''; $feats ||= '';
+        say "$in<conll><pos>$xpos</pos><feat>$feats</feat></conll>";
+    }
     # TODO misc and deps into wild, but probably need to encode ř as \x{159} etc using Dumper.
     my @children = $node->children;
     if (@children){
@@ -100,10 +94,9 @@ sub process_document {
   <bundles>
 END
     foreach my $bundle ( $doc->bundles() ) {
-        if ($self->_should_process_bundle($bundle, $bundleNo)){
-            $self->process_bundle($bundle, $bundleNo);
+        if ($self->_should_process_bundle($bundle)){
+            $self->process_bundle($bundle);
         }
-        $bundleNo++;
     }
     return;
 }

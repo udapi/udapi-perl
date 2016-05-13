@@ -12,19 +12,17 @@ sub process_end {
 sub process_document {
     my ($self, $doc) = @_;
 
-    my $bundleNo = 1;
     foreach my $bundle ( $doc->bundles() ) {
-        if ($self->_should_process_bundle($bundle, $bundleNo)){
-            $self->process_bundle($bundle, $bundleNo);
+        if ($self->_should_process_bundle($bundle)){
+            $self->process_bundle($bundle);
         }
-        $bundleNo++;
     }
     return;
 }
 
 sub _should_process_bundle {
-    my ($self, $bundle, $bundleNo) = @_;
-    # TODO: if ( !$self->select_bundles || $self->_is_bundle_selected->{$bundleNo} );
+    my ($self, $bundle) = @_;
+    # TODO: if ( !$self->select_bundles || $self->_is_bundle_selected->{$bundle->number} );
     return 1;
 }
 
@@ -36,27 +34,27 @@ sub _should_process_tree {
 }
 
 sub process_bundle {
-    my ( $self, $bundle, $bundleNo ) = @_;
+    my ( $self, $bundle ) = @_;
 
     my @trees = $bundle->trees();
     foreach my $tree (@trees) {
         next if !$self->_should_process_tree($tree);
-        $self->process_tree( $tree, $bundleNo );
+        $self->process_tree( $tree );
     }
     return;
 }
 
 sub process_tree {
-    my ( $self, $tree, $bundleNo ) = @_;
+    my ( $self, $tree ) = @_;
 
     foreach my $node ($tree->descendants()){
-        $self->process_node($node, $bundleNo);
+        $self->process_node($node);
     }
     return;
 }
 
 sub process_node {
-    my ( $self, $node, $bundleNo ) = @_;
+    my ( $self, $node ) = @_;
     confess "Block $self does not implement (override) any of the process_* methods";
 }
 

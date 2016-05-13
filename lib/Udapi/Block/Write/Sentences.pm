@@ -5,7 +5,7 @@ extends 'Udapi::Core::Block';
 has_ro if_missing => ( default => 'detokenize',); #isa => enum([qw(detokenize empty warn fatal)]), );
 
 sub process_tree {
-    my ($self, $tree, $bundleNo) = @_;
+    my ($self, $tree) = @_;
     my $sentence = $tree->sentence;
     if (!defined $sentence){
         my $what = $self->if_missing;
@@ -17,7 +17,7 @@ sub process_tree {
             $sentence = '';
         }
         else {
-            my $msg = "Sentence $bundleNo is undefined";
+            my $msg = 'Sentence ' . $tree->bundle->number . ' is undefined';
             confess $msg if $what eq 'fatal';
             warn $msg;
         }

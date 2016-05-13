@@ -7,9 +7,9 @@ use List::Util qw(any);
 use Udapi::Core::Node;
 use Udapi::Core::Node::Root;
 
-my ($TREES, $ID, $DOC);
+my ($TREES, $ID, $NUMBER, $DOC);
 BEGIN {
-    ($TREES, $ID, $DOC) = (0..10);
+    ($TREES, $ID, $NUMBER, $DOC) = (0..10);
 }
 
 use Class::XSAccessor::Array {
@@ -17,10 +17,12 @@ use Class::XSAccessor::Array {
     setters => {
         set_id => $ID,
         _set_document => $DOC,
+        _set_number => $NUMBER,
     },
     getters => {
         id => $ID,
         document => $DOC,
+        number => $NUMBER,
     },
 };
 

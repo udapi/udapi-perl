@@ -16,7 +16,7 @@ has_ro bundles_per_doc => (
 has_rw _buffer => ();
 
 sub read_tree {
-	confess 'Method "read_tree" must be implemented in descendants of Udapi::Core::Reader';
+    confess 'Method "read_tree" must be implemented in descendants of Udapi::Core::Reader';
 }
 
 sub is_multizone_reader {
@@ -27,8 +27,6 @@ sub process_document {
     my ($self, $doc) = @_;
 
     my @orig_bundles = $doc->bundles();
-    my $bundleNo = 0; # number of bundles loaded so far (in the current $doc)
-
     my $self_zone = $self->zone;
     my $self_bpd = $self->bundles_per_doc;
     my $bundle;
@@ -37,7 +35,6 @@ sub process_document {
     # There may be a tree left in the buffer when reading the last doc.
     if ($self->_buffer) {
         $bundle = @orig_bundles ? shift @orig_bundles : $doc->create_bundle();
-        $bundleNo++;
         $bundle->add_tree($self->_buffer);
         $self->_set_buffer(undef);
     }
@@ -62,8 +59,9 @@ sub process_document {
             $root->_set_zone($self_zone);
         }
 
+        # assign new/next bundle to $bundle if needed
         if (!$bundle || !$add_to_the_last_bundle){
-            if ($self_bpd && $self_bpd == $bundleNo){
+            if ($self_bpd && $bundle && $self_bpd == $bundle->number){
                 $self->_set_buffer($root);
                 warn "bundles_per_doc=$self_bpd but the doc already contained "
                       . scalar(@orig_bundles) . ' bundles' if @orig_bundles;
@@ -79,7 +77,6 @@ sub process_document {
                 $bundle = $doc->create_bundle();
                 $bundle->set_id($last_bundle_id);
             }
-            $bundleNo++;
         }
 
         $bundle->add_tree($root);
@@ -90,7 +87,7 @@ sub process_document {
         # if the current bundle has ended or there will be another tree for this bundle.
         # So in case of multizone readers we need to read one extra tree
         # and store it in the buffer (and include it into the next document).
-        return if $self_bpd && $self_bpd == $bundleNo && !$self->is_multizone_reader;
+        return if $self_bpd && $self_bpd == $bundle->number && !$self->is_multizone_reader;
     }
 
     return;

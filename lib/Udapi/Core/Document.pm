@@ -18,7 +18,9 @@ sub create_bundle {
     my ($self, $args) = @_;
     # TODO args->{before} args->{after}
     my $bundle = Udapi::Core::Bundle->new();
-    $bundle->set_id(1 + @{$self->{_bundles}});
+    my $number = 1 + @{$self->{_bundles}};
+    $bundle->set_id($number);
+    $bundle->_set_number($number);
     $bundle->_set_document($self);
     push @{$self->{_bundles}}, $bundle;
     return $bundle;
