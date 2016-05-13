@@ -121,8 +121,10 @@ sub destroy {
 }
 
 sub remove {
-    confess 'Tree root cannot be removed using $root->remove().'
-          . ' Use $bundle->remove_tree($selector) instead';
+    my ($self) = @_;
+    $self->bundle->_remove_tree($self);
+    $self->destroy();
+    return;
 }
 
 sub copy_tree {

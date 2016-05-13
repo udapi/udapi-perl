@@ -52,6 +52,12 @@ sub add_tree {
     return;
 }
 
+sub _remove_tree {
+    my ($self, $root) = @_;
+    $self->[$TREES] = [grep {$_ != $root} @{$self->[$TREES]}];
+    return;
+}
+
 sub get_tree {
     my ($self, $zone) = @_;
     return first {$zone eq $_->zone} @{$self->[$TREES]};
