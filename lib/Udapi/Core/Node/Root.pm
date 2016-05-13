@@ -47,6 +47,7 @@ sub set_zone {
 # (eventhough the well-defined value for parent() is 'undef').
 sub parent {return undef;}
 sub root {return $_[0];}
+sub is_root {return 1;}
 sub ord {return 0;}
 sub document {return $_[0][$BUNDLE]->document;}
 
