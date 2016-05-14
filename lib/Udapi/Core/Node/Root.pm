@@ -163,4 +163,9 @@ sub address {
     return $_[0][$BUNDLE]->id . ($_[0][$ZONE] eq '' ? '' : '/' . $_[0][$ZONE]);
 }
 
+sub shift_before_node    { confess 'Cannot call shift_* methods on root';}
+sub shift_after_node     { confess 'Cannot call shift_* methods on root';}
+sub shift_before_subtree { confess 'Cannot call shift_* methods on root';}
+sub shift_after_subtree  { confess 'Cannot call shift_* methods on root';}
+
 1;
