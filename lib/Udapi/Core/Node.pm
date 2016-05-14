@@ -267,7 +267,7 @@ sub bundle { $_[0]->[$ROOT][$BUNDLE]; }
 
 sub document { $_[0]->[$ROOT][$BUNDLE]->document; }
 
-sub address { $_[0]->bundle->id . '-' . $_[0]->[$ORD]; } #???
+sub address { $_[0]->[$ROOT]->address . '#' . $_[0]->[$ORD]; }
 
 sub is_root { return 0; }
 

@@ -159,4 +159,8 @@ sub _copy_subtree {
     return $new_node;
 }
 
+sub address {
+    return $_[0][$BUNDLE]->id . ($_[0][$ZONE] eq '' ? '' : '/' . $_[0][$ZONE]);
+}
+
 1;
