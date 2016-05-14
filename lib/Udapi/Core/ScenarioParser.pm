@@ -55,7 +55,7 @@ sub parse {
                 }
             }
             # 4c unquoted parameter value
-            elsif ($scen =~ /\G(\S+)/gc) {
+            elsif ($scen =~ /\G(\S*)/gc) {
                 $param_value = $1;
             }
             # 4d no valid value parameter value
