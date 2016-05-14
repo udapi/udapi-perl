@@ -39,10 +39,12 @@ sub process_tree {
     my $bundle_number = $tree->bundle->number;
     my $root_id = "a-$bundle_number";
     my $sentence = $tree->sentence;
-    my $language = 'und'; # TODO + selector
+    my ($language, $selector) = split /_/, $tree->zone;
+    $language ||= 'und';
+    $selector ||= '';
     my $tree_id = "s$bundle_number-$language";
     my $in = ' ' x 8;
-    say "$in<zone language='$language'>";
+    say "$in<zone language='$language' selector='$selector'>";
     say "$in  <sentence>$sentence</sentence>" if defined $sentence;
     say "$in  <trees>\n$in    <a_tree id='$tree_id'>";
     $self->print_subtree($tree, $tree_id, ' ' x 12);

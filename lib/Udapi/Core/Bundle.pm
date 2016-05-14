@@ -40,10 +40,10 @@ sub add_tree {
     my ($self, $root) = @_;
     my $zone = $root->zone;
     if (!defined $zone){
-        $zone = 'und';
+        $zone = '';
         $root->_set_zone($zone);
     } else {
-        confess "'$zone' is not a valid zone name" if $zone !~ /^[a-z-]+(_[A-Za-z0-9-])?$/;
+        confess "'$zone' is not a valid zone name (/^[a-z-]*(_[A-Za-z0-9-])?\$/)" if $zone !~ /^[a-z-]*(_[A-Za-z0-9-])?$/;
         confess "'all' cannot be used as a zone name" if $zone eq 'all';
     }
     confess "Tree with zone '$zone' already exists in bundle " . $self->id

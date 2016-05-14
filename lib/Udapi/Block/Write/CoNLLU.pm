@@ -11,7 +11,7 @@ sub process_tree {
 
     my $bundle_id = $tree->bundle->id;
     my $zone = $tree->zone;
-    say "# sent_id $bundle_id" . ($zone eq 'und' ? '' : "/$zone");
+    say "# sent_id $bundle_id" . ($zone ? "/$zone" : '');
 
     my $comment = $tree->misc;
     if (length $comment){

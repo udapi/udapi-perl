@@ -28,7 +28,7 @@ sub create_bundle {
 
 # Based on $root->id the tree is added either to the last existing bundle or to a new bundle.
 # $root->id should contain "$bundle_id/$zone".
-# The "/$zone" part is optional. If missing, zone='und' is used for the new tree.
+# The "/$zone" part is optional. If missing, an empty-string zone is used for the new tree.
 sub add_tree {
     my ($self, $root) = @_;
     my $add_to_the_last_bundle = 1;
@@ -40,7 +40,7 @@ sub add_tree {
         my ($bundle_id, $zone) = split /\//, $tree_id;
         if (defined $zone){
             confess "'$zone' is not a valid zone name (from tree_id='$tree_id')"
-                if $zone !~ /^[a-z-]+(_[A-Za-z0-9-])?$/;
+                if $zone !~ /^[a-z-]*(_[A-Za-z0-9-])?$/;
             $root->_set_zone($zone);
         }
         my $last_bundle = $self->{_bundles}[-1];
