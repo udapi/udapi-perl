@@ -54,6 +54,16 @@ sub add_tree {
     return;
 }
 
+sub _remove_bundle {
+    my ($self, $number) = @_;
+    $number--; # the number is 1-based
+    splice @{$self->{_bundles}}, $number, 1;
+    foreach my $index ($number .. -1+@{$self->{_bundles}}){
+        $self->{_bundles}[$index]->_set_number($index+1);
+    }
+    return;
+}
+
 my ($ORD, $ROOT, $PARENT, $FIRSTCHILD, $NEXTSIBLING, $MISC) = (0..5);
 my $DESCENDANTS = 6;
 

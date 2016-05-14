@@ -118,7 +118,7 @@ Udapi::Block::Util::Eval - Special block for evaluating code given by parameters
 =head1 SYNOPSIS
 
   # on the command line
-  newtreex Read::CoNLLU from=a.txt Util::Eval node='say $.lemma'
+  udapi.pl Read::CoNLLU from=a.txt Util::Eval node='say $.lemma'
 
 =head1 AUTHOR
 

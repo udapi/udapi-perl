@@ -74,4 +74,11 @@ sub destroy {
     return;
 }
 
+sub remove {
+    my ($self) = @_;
+    $self->[$DOC]->_remove_bundle($self->[$NUMBER]);
+    $self->destroy();
+    return;
+}
+
 1;
