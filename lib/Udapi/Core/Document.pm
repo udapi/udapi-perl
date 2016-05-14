@@ -112,6 +112,15 @@ sub _read_conllu_tree_from_fh {
     # we return undef as a sign of failure (end of file or more than one empty line).
     return undef if @nodes==1;
 
+    # Empty sentences are not allowed in CoNLL-U,
+    # but if the users want to save just the sentence string and/or sent_id
+    # they need to create one artificial node and mark it with Empty=Yes.
+    # In that case, we will delete this node, so the tree will have just the (technical) root.
+    # See also Udapi::Block::Write::CoNLLU, which is compatible with this trick.
+    if (@nodes == 2 && $nodes[1][$MISC] eq 'Empty=Yes'){
+        pop @nodes;
+    }
+
     # Set dependency parents (now, all nodes of the tree are created).
     # The following code does the same as
     # $nodes[$i]->set_parent($nodes[$parents[$i]]) for my $i (1..$#nodes);
