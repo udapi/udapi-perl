@@ -8,7 +8,7 @@ use Carp;
 
 sub new {
     my ($class) = @_;
-    my $self = {_bundles=>[], };
+    my $self = {_bundles=>[], _highest_bundle_id=>0};
     return bless $self, $class;
 }
 
@@ -18,9 +18,9 @@ sub create_bundle {
     my ($self, $args) = @_;
     # TODO args->{before} args->{after}
     my $bundle = Udapi::Core::Bundle->new();
-    my $number = 1 + @{$self->{_bundles}};
-    $bundle->set_id($number);
-    $bundle->_set_number($number);
+    my $id = ++$self->{_highest_bundle_id};
+    $bundle->set_id($id);
+    $bundle->_set_number(1 + @{$self->{_bundles}});
     $bundle->_set_document($self);
     push @{$self->{_bundles}}, $bundle;
     return $bundle;

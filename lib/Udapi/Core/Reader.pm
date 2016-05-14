@@ -75,7 +75,7 @@ sub process_document {
                 }
             } else {
                 $bundle = $doc->create_bundle();
-                $bundle->set_id($last_bundle_id);
+                $bundle->set_id($last_bundle_id) if $last_bundle_id ne '';
             }
         }
 
