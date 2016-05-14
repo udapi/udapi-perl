@@ -11,6 +11,7 @@ sub process_tree {
         my $what = $self->if_missing;
         if ($what eq 'detokenize') {
             # TODO SpaceAfter=No
+            # TODO see Util::SetSentence
             $sentence = join ' ', map {$_->form} $tree->descendants();
         }
         elsif ($what eq 'empty') {

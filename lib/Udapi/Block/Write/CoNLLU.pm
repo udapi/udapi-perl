@@ -3,6 +3,7 @@ use Udapi::Core::Common;
 extends 'Udapi::Core::Block';
 
 has_rw print_sent_id => (isa=>Bool, default=>1);
+has_rw print_sentence => (isa=>Bool, default=>1);
 
 sub process_tree {
     my ($self, $tree) = @_;
@@ -15,6 +16,10 @@ sub process_tree {
         my $bundle_id = $tree->bundle->id;
         my $zone = $tree->zone;
         say "# sent_id $bundle_id" . ($zone ? "/$zone" : '');
+    }
+    if ($self->print_sentence) {
+        my $sentence = $tree->sentence;
+        say "# sentence $sentence" if length $sentence;
     }
 
     my $comment = $tree->misc;

@@ -85,6 +85,10 @@ sub _read_conllu_tree_from_fh {
         if ($line =~ s/^#// ){
             if ($line =~ /^\s*sent_id\s+(\S+)/) {
                 $root->set_id($1);
+            # TODO: see https://github.com/UniversalDependencies/docs/issues/273
+            # and decide whether it should be "sentence-text:", "text" or what.
+            } elsif ($line =~ /^\s*sentence\s+(.*)$/) {
+                $root->set_sentence($1);
             } else {
                 $comment = $comment . $line . "\n";
             }
