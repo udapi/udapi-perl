@@ -194,6 +194,8 @@ sub nodeToString {
 
 __END__
 
+=encoding utf-8
+
 =head1 NAME
 
 Udapi::Block::Write::TextModeTrees - legible dependency trees

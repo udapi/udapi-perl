@@ -24,7 +24,7 @@ sub BUILD {
     return;
 }
 
-# TOOD: if a derived class uses before process_document => sub{},
+# TODO: if a derived class uses before process_document => sub{},
 # e.g. for printing a header (as is the case with Write::Treex),
 # this before code will be called befor this process_document
 # and the header will be printed to a wrong filename.

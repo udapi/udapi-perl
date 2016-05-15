@@ -2,3 +2,5 @@ name = "Udapi"
 # badges = ["travis"]
 module_maker="ModuleBuildTiny"
 
+[release]
+do_not_upload_to_cpan=true
