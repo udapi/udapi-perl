@@ -489,3 +489,115 @@ sub precedes {
 }
 
 1;
+__END__
+
+=encoding utf-8
+
+=head1 NAME
+
+Udapi::Core::Node - representation of a node in a dependency tree
+
+=head1 SYNOPSIS
+
+ # New nodes via constructor (used only in special cases)
+ use Udapi::Core::Node;
+ my $node = Udapi::Core::Node->new(
+   form=>'dogs', lemma=>'dog', upos=>'NOUN', xpos=>'NNS',
+   feats=>'Number=Plur', deprel='nubj', misc=>'SpaceAfter=No');
+
+ # New nodes via create_child (the usual way)
+ my $root = $bundle->create_tree($zone);
+ my $node = $root->create_child(form=>'dogs', lemma=>'dog');
+ my $child = $node->create_child(form=>'old', upos=>'ADJ');
+
+ # Access to attributes
+ my $lemma = $node->lemma;
+ my ($deprel, $deps) = $node->get_attrs('deprel', 'deps');
+ $child->set_lemma('old');
+
+ # Access to containers and meta-info
+ my $bundle   = $node->bundle;
+ my $doc      = $node->document;
+ my $zone     = $node->zone;    # e.g. en_gold
+ my $address  = $node->address; # e.g. 123/en_gold#4
+
+ # Access to topology
+ my $root     = $node->root;
+ my $boolean  = $node->is_root;
+ my $parent   = $node->parent;
+ my @children = $node->children;
+ my @descs    = $node->descendants;
+ my $first_ch = $node->children({first_only=>1});
+ my $last_des = $node->descendants({last_only=>1});
+ if (!$node->is_descendant_of($another_node)){
+     $another_node->set_parent($node);
+ }
+ $child->remove(); # delete with all its descendants
+ $child->remove({children=>'rehang_warn'});
+
+ # Access to word order
+ my $nth_token_in_tree = $node->ord;
+ if ($node->precedes($another_node)){
+     $node->shift_after_node($another_node);
+ }
+ $node->shift_before_subtree($another_node, {without_children=>1});
+ $another_node = $node->next_node;
+ $another_node = $node->prev_node;
+
+
+=head1 DESCRIPTION
+
+This class represents a Udapi node.
+Udapi trees (contained in bundles) are formed by nodes and edges.
+Attributes can be stored only in nodes.
+The (technical) root of the tree is of type L<Udapi::Core::Node::Root>,
+but all the node's methods can be called also on root.
+
+=head2 Construction
+
+=head3 new
+
+C<my $node = Udapi::Core::Node-E<gt>new(%attributes);>
+
+Nodes can be created with the constructor C<new>,
+but such nodes do not have any parent and are not part of any tree,
+so they should be first added to some tree using C<set_parent>,
+otherwise some methods may not work as expected.
+The C<%attributes> is a hash of attribute names and values.
+Possible attribute names are:
+
+=over
+
+=item
+
+regular L<CoNLL-U|http://universaldependencies.org/format.html> attributes:
+B<form, lemma, upos, xpos, feats, deprel, deps, misc>
+Currently, all are treated as strings.
+(In future, B<feats>, B<deps> and B<misc> may become structured).
+
+=item
+B<ord> -- ordinal number of the node, corresponding to the first column (I<ID>)
+in CoNLL-U files. That is 1-based index.
+The technical root has ord=0.
+
+=item
+
+internal Udapi attributes: B<root, parent, firstchild, nextsibling>
+These should not be accessed directly.
+
+=back
+
+
+
+
+=head1 AUTHOR
+
+Martin Popel E<lt>popel@ufal.mff.cuni.czE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright © 2016 by Institute of Formal and Applied Linguistics, Charles University in Prague
+
+This module is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
+
+=cut
