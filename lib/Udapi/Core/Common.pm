@@ -15,7 +15,7 @@ sub import {
     my $result = eval "package $caller;" .
 <<'END';
 use Moo;
-use Carp;
+use Carp qw(cluck confess);
 use List::Util qw(first min max all any none);
 use Scalar::Util qw(weaken);
 use Data::Printer;
@@ -78,7 +78,7 @@ Instead of
  use feature 'say';
  use open qw(:encoding(UTF-8) :std); # STD(IN|OUT|ERR) in utf8
  use Moo;
- use Carp;
+ use Carp qw(cluck confess);
  use List::Util qw(first min max all any none);
  use Scalar::Util qw(weaken);
  use Data::Printer;
