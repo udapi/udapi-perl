@@ -1,6 +1,6 @@
 package Udapi::Block::Write::Treex;
 use Udapi::Core::Common;
-extends 'Udapi::Core::Block';
+extends 'Udapi::Core::Writer';
 
 #has_ro compress => ( isa => Bool, default => 1, doc => 'create *.conllu.gz files');
 
@@ -81,24 +81,3 @@ sub print_subtree {
 }
 
 1;
-
-__END__
-
-sub process_document {
-    my ($self, $doc) = @_;
-    print << "END";
-<?xml version="1.0" encoding="UTF-8"?>
-<treex_document xmlns="http://ufal.mff.cuni.cz/pdt/pml/">
-  <head>
-    <schema href="treex_schema.xml" />
-  </head>
-  <meta/>
-  <bundles>
-END
-    foreach my $bundle ( $doc->bundles() ) {
-        if ($self->_should_process_bundle($bundle)){
-            $self->process_bundle($bundle);
-        }
-    }
-    return;
-}

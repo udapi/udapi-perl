@@ -1,6 +1,6 @@
 package Udapi::Block::Write::CoNLLU;
 use Udapi::Core::Common;
-extends 'Udapi::Core::Block';
+extends 'Udapi::Core::Writer';
 
 has_rw print_sent_id => (isa=>Bool, default=>1);
 has_rw print_sentence => (isa=>Bool, default=>1);

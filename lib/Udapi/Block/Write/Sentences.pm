@@ -1,6 +1,6 @@
 package Udapi::Block::Write::Sentences;
 use Udapi::Core::Common;
-extends 'Udapi::Core::Block';
+extends 'Udapi::Core::Writer';
 
 has_ro if_missing => ( default => 'detokenize',); #isa => enum([qw(detokenize empty warn fatal)]), );
 
