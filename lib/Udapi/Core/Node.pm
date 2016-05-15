@@ -576,6 +576,7 @@ Currently, all are treated as strings.
 (In future, B<feats>, B<deps> and B<misc> may become structured).
 
 =item
+
 B<ord> -- ordinal number of the node, corresponding to the first column (I<ID>)
 in CoNLL-U files. That is 1-based index.
 The technical root has ord=0.
@@ -586,8 +587,6 @@ internal Udapi attributes: B<root, parent, firstchild, nextsibling>
 These should not be accessed directly.
 
 =back
-
-
 
 
 =head1 AUTHOR
