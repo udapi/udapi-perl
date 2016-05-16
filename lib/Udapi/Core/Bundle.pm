@@ -1,9 +1,8 @@
 package Udapi::Core::Bundle;
 use strict;
 use warnings;
-use autodie;
 use Carp;
-use List::Util qw(any);
+use List::Util qw(first any);
 use Udapi::Core::Node;
 use Udapi::Core::Node::Root;
 
