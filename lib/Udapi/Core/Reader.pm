@@ -2,6 +2,7 @@ package Udapi::Core::Reader;
 use Udapi::Core::Common;
 use Udapi::Core::Files;
 extends 'Udapi::Core::Block';
+with 'Udapi::Core::Role::Reader';
 
 has_ro zone => (
     default => 'keep',
