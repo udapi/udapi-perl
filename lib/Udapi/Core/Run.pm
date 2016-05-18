@@ -13,6 +13,14 @@ our @EXPORT_OK = q(udapi_runner);
 use List::MoreUtils qw(first_index);
 use Udapi::Core::Document;
 use Udapi::Core::ScenarioParser;
+use Udapi::Block::Read::CoNLLU;
+
+option save => (
+    is      => 'ro',
+    short   => 's',
+    default => 0,
+    doc     => q{add 'Write::CoNLLU' to the end of scenario},
+);
 
 option dump_scenario => (
     is    => 'ro',
@@ -80,7 +88,10 @@ sub execute {
     #    log_info "Block $reader added to the beginning of the scenario.";
     #    $scen_str = "$reader from=" . join( ',', @{ $self->filenames } ) . " $scen_str";
     #}
-    # $self->tokenize $self->lang $self->selector $self->save
+    # $self->tokenize $self->lang $self->selector
+    if ($self->save) {
+        $scen_str .= ' Write::CoNLLU';
+    }
 
     # parse the scenario specification stored in string, load subscenarios
     my @block_items = Udapi::Core::ScenarioParser::parse($scen_str);
@@ -99,6 +110,13 @@ sub execute {
     my @blocks;
     foreach my $block_item (@block_items) {
         push @blocks, $self->_create_block($block_item);
+    }
+
+    my @readers = grep {$_->does('Udapi::Core::Role::Reader')} @blocks;
+    if (!@readers){
+        my $conllu_reader = Udapi::Block::Read::CoNLLU->new();
+        @readers = ($conllu_reader);
+        unshift @blocks, $conllu_reader;
     }
 
     # 3. load models etc. within process_start();
