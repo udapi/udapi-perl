@@ -184,7 +184,8 @@ sub children {
             return $last;
         }
     }
-    return sort {$a->[$ORD] <=> $b->[$ORD]} @children;
+    @children = sort {$a->[$ORD] <=> $b->[$ORD]} @children;
+    return @children;
 }
 
 sub create_child {
