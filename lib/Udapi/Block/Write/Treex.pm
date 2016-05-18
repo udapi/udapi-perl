@@ -26,7 +26,7 @@ after process_document => sub {
 
 before process_bundle => sub {
     my ( $self, $bundle ) = @_;
-    say '<LM id="s' . $bundle->number . "\">\n      <zones>";
+    say '    <LM id="s' . $bundle->number . "\">\n      <zones>";
 };
 
 after process_bundle => sub {

@@ -121,7 +121,9 @@ sub execute {
             my $block_name = ref($block);
 
             warn "Applying block $block_number/$number_of_blocks $block_name\n";
+            $block->before_process_document($doc);
             $block->process_document($doc);
+            $block->after_process_document($doc);
         }
         # TODO:
         $was_last_document = 1;
@@ -150,13 +152,6 @@ sub _construct_scenario_string_with_quoted_whitespace {
         }
     }
     return join ' ', @arguments;
-}
-
-sub _use_block {
-    my ( $self, $block_item ) = @_;
-    my $block_name = $block_item->{block_name};
-    eval "use $block_name; 1;" or confess "Can't use block $block_name !\n$@\n";
-    return;
 }
 
 sub _create_block {

@@ -2,7 +2,7 @@ package Udapi::Block::Util::Eval;
 use Udapi::Core::Common;
 extends 'Udapi::Core::Block';
 
-has_ro [qw(doc bundle tree node start end)];
+has_ro [qw(doc bundle tree node start end before_doc after_doc before_bundle after_bundle)];
 
 has_ro expand_code => (
     default => 1,
@@ -28,7 +28,7 @@ sub process_document {
         eval($to_eval) or confess("While evaluating '$to_eval' got error: $@");
     }
 
-    if ( $self->bundle || $self->tree || $self->node ) {
+    if ( $self->bundle || $self->before_bundle || $self->after_bundle || $self->tree || $self->node ) {
         foreach my $bundle ( $doc->bundles() ) {
             if ($self->_should_process_bundle($bundle)){
                 $self->process_bundle($bundle);
@@ -38,6 +38,29 @@ sub process_document {
     return;
 }
 
+sub before_process_document {
+    my ( $self, $doc ) = @_;
+    if ( $self->before_doc ) {
+        my $document = $doc;
+        my $this = $doc;
+        my $to_eval = $self->expand_eval_code($self->before_doc);
+        eval($to_eval) or confess("While evaluating '$to_eval' got error: $@");
+    }
+    return;
+}
+
+sub after_process_document {
+    my ( $self, $doc ) = @_;
+    if ( $self->after_doc ) {
+        my $document = $doc;
+        my $this = $doc;
+        my $to_eval = $self->expand_eval_code($self->after_doc);
+        eval($to_eval) or confess("While evaluating '$to_eval' got error: $@");
+    }
+    return;
+}
+
+
 sub process_bundle {
     my ( $self, $bundle ) = @_;
 
@@ -45,6 +68,12 @@ sub process_bundle {
     my $doc      = $bundle->document();
     my $document = $doc;
     my $this     = $bundle;
+
+    if ( $self->before_bundle ) {
+        my $to_eval = $self->expand_eval_code($self->before_bundle);
+        eval($to_eval) or confess("While evaluating '$to_eval' got error: $@");
+    }
+
     if ( $self->bundle ) {
         my $to_eval = $self->expand_eval_code($self->bundle);
         eval($to_eval) or confess("While evaluating '$to_eval' got error: $@");
@@ -56,6 +85,11 @@ sub process_bundle {
             next if !$self->_should_process_tree($tree);
             $self->process_tree( $tree );
         }
+    }
+
+    if ( $self->after_bundle ) {
+        my $to_eval = $self->expand_eval_code($self->after_bundle);
+        eval($to_eval) or confess("While evaluating '$to_eval' got error: $@");
     }
     return;
 }
@@ -119,6 +153,10 @@ Udapi::Block::Util::Eval - Special block for evaluating code given by parameters
 
   # on the command line
   udapi.pl Read::CoNLLU from=a.txt Util::Eval node='say $.lemma'
+
+=head1 PARAMETERS
+
+doc bundle tree node start end before_doc after_doc before_bundle after_bundle
 
 =head1 AUTHOR
 

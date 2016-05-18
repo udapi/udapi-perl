@@ -24,33 +24,7 @@ sub BUILD {
     return;
 }
 
-# TODO: if a derived class uses before process_document => sub{},
-# e.g. for printing a header (as is the case with Write::Treex),
-# this before code will be called befor this process_document
-# and the header will be printed to a wrong filename.
-
-sub process_document {
-    my ($self, $doc) = @_;
-    if ($self->to ne '-'){
-        close STDOUT;
-        my $filename = $self->next_filename;
-        if (!defined $filename){
-            cluck 'There are more documents to save than filenames given ('. $self->to . ').';
-        } elsif ($filename eq '-') {
-            select STDOUT;
-        } else {
-            my $mode = '>:'.$self->encoding;
-            open STDOUT, $mode, $filename;
-        }
-    }
-    return $self->SUPER::process_document($doc);
-}
-
-1;
-
-__END__
-
-before process_document => sub {
+sub before_process_document {
     my ($self, $doc) = @_;
     return if $self->to eq '-';
 
@@ -68,3 +42,5 @@ before process_document => sub {
 };
 
 1;
+
+__END__

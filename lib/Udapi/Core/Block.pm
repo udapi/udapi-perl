@@ -3,11 +3,12 @@ use Udapi::Core::Common;
 
 has zones => ( is => 'ro', default => 'all' );
 
-sub process_start {
-}
-
-sub process_end {
-}
+sub process_start {}
+sub process_end {}
+sub before_process_document {}
+sub after_process_document {}
+sub before_process_bundle {}
+sub after_process_bundle {}
 
 sub process_document {
     my ($self, $doc) = @_;
@@ -37,11 +38,13 @@ sub _should_process_tree {
 sub process_bundle {
     my ( $self, $bundle ) = @_;
 
+    $self->before_process_bundle($bundle);
     my @trees = $bundle->trees();
     foreach my $tree (@trees) {
         next if !$self->_should_process_tree($tree);
         $self->process_tree( $tree );
     }
+    $self->after_process_bundle($bundle);
     return;
 }
 
