@@ -16,11 +16,7 @@ has_ro bundles_per_doc => (
 );
 
 has_rw from => (
-    #coerce        => \&Udapi::Core::Files::coerce,
-    #isa           => 'Udapi::Core::Files', # Udapi::Core::Files->new(),
-    #handles       => [qw(current_filename file_number _set_file_number)],
-    doc => 'arrayref of filenames to be loaded, '
-         . 'coerced from a space or comma separated list of filenames',
+    doc => 'space or comma separated list of filenames to be loaded',
     default => '-',
 );
 

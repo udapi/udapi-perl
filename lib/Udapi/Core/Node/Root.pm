@@ -1,6 +1,12 @@
 package Udapi::Core::Node::Root;
 use strict;
 use warnings;
+
+# Udapi::Core::Node::Root inherits from Udapi::Core::Node,
+# although it redefines most of the methods.
+# The following line is equivalent to Moo(se) extends `Udapi::Core::Node';
+use parent 'Udapi::Core::Node';
+
 use Carp qw(confess cluck);
 use List::Util qw(any);
 
@@ -66,9 +72,6 @@ sub descendants {
     return ($_[0], @{$_[0]->[$DESCENDANTS]}) if $_[1]{add_self};
     confess 'unknown option for descendants(): '. %{$_[1]};
 }
-
-*_descendantsF = \&descendants;
-*children = \&Udapi::Core::Node::children;
 
 sub next_node { return $_[0]->[$DESCENDANTS][1]; }
 sub prev_node { return undef; }
