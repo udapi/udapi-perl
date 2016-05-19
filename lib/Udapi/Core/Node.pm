@@ -188,6 +188,18 @@ sub children {
     return @children;
 }
 
+# No $args, no sort, fastest
+sub _childrenF {
+    #my ($self) = @_;
+    my @children = ();
+    my $child = $_[0][$FIRSTCHILD];
+    while ($child) {
+        push @children, $child;
+        $child = $child->[$NEXTSIBLING];
+    }
+    return @children;
+}
+
 sub create_child {
     my $self = shift;
     my $child = Udapi::Core::Node->new(@_); #ref($self)->new(@_);
@@ -249,7 +261,8 @@ sub _descendants {
         return $last;
     }
 
-    return sort {$a->[$ORD] <=> $b->[$ORD]} @descs;
+    @descs = sort {$a->[$ORD] <=> $b->[$ORD]} @descs;
+    return @descs;
 }
 
 sub is_descendant_of {
