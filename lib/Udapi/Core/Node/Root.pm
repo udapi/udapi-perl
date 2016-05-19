@@ -171,4 +171,14 @@ sub shift_after_node     { confess 'Cannot call shift_* methods on root';}
 sub shift_before_subtree { confess 'Cannot call shift_* methods on root';}
 sub shift_after_subtree  { confess 'Cannot call shift_* methods on root';}
 
+sub compute_sentence {
+    my ($self) = @_;
+    my $str = '';
+    foreach my $node ($self->descendants){
+        $str .= $node->form;
+        $str .= ' ' if $node->misc !~ /SpaceAfter=No/;
+    }
+    return $str;
+}
+
 1;

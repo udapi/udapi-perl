@@ -285,6 +285,8 @@ sub address { $_[0]->[$ROOT]->address . '#' . $_[0]->[$ORD]; }
 
 sub is_root { return 0; }
 
+sub is_leaf { return !$_[0]->[$FIRSTCHILD];}
+
 sub prev_node {
     my ($self) = @_;
     my $ord = $self->[$ORD] - 1;
@@ -503,6 +505,7 @@ sub precedes {
 }
 
 1;
+
 __END__
 
 =encoding utf-8
