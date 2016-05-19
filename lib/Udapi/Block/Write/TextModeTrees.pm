@@ -5,180 +5,115 @@ extends 'Udapi::Core::Writer';
 has_ro tree_ids => ( isa => Bool, default => 0 );
 has_ro sents    => ( isa => Bool, default => 0 );
 has_ro indent   => ( isa => Int,  default => 1, doc => 'number of columns for better readability');
+has_ro minimize_cross => ( isa => Bool, default => 1, doc => 'minimize crossings of edges in non-projective trees');
 
-use constant {
-        PRINT     => 0,
-        XNODE     => 1,
-        PARENT    => 2,
-        SONS      => 3,
-        INDEX     => 4,
-        PRINTED   => 5,
-        LEFTMOST  => 6,
-        RIGHTMOST => 7,
-        DEPTH     => 8,
-    };
-
-my $H  = "\x{2500}"; # ─
-my $V  = "\x{2502}"; # │
-my $LT = "\x{2518}"; # ┘
-my $LB = "\x{2510}"; # ┐
-my $RB = "\x{250C}"; # ┌
-my $RT = "\x{2514}"; # └
-my $RV = "\x{251C}"; # ├
-my $LV = "\x{2524}"; # ┤
-my $HB = "\x{252C}"; # ┬
-my $HT = "\x{2534}"; # ┴
-my $HV = "\x{253C}"; # ┼
+# Symbols for drawing edges
+my (@DRAW, @SPACE, $H, $V);
 
 sub BUILD {
     my ($self) = @_;
-    my $indent = $self->indent;
-    if ($indent){
-        for my $line_sign ($H, $LT, $LB, $LV, $HB, $HT, $HV){
-            $line_sign = ('─' x $indent) . $line_sign;
-        }
-        for my $space_sign ($V, $RB, $RT, $RV){
-            $space_sign = (' ' x $indent) . $space_sign;
-        }
-    }
+
+    # $DRAW[bottom-most][top-most]
+    my $line = '─' x $self->indent;
+    $H          = $line . '─';
+    $DRAW[1][1] = $H;
+    $DRAW[1][0] = $line . '┘';
+    $DRAW[0][1] = $line . '┐';
+    $DRAW[0][0] = $line . '┤';
+
+    # $SPACE[bottom-most][top-most]
+    my $space = ' ' x $self->indent;
+    $SPACE[1][0] = $space . '└';
+    $SPACE[0][1] = $space . '┌';
+    $SPACE[0][0] = $space . '├';
+    $V           = $space . '│';
     return;
+}
+
+# We want to be able to call process_tree not only on root node,
+# so this block can be called from $node->print_subtree($args)
+# on any node and print its subtree. Thus, we cannot assume that
+# $all[$idx]->ord == $idx. Instead of $node->ord, we'll use $index_of{$node},
+# which is its index within the printed subtree.
+# $gaps{$node} = number of nodes within $node's span, which are not its descendants.
+my (%gaps, %index_of);
+
+sub _compute_gaps {
+    my ($node) = @_;
+    my ($lmost, $rmost, $descs) = ($index_of{$node}, $index_of{$node}, 0);
+    foreach my $child ($node->_childrenF){
+        my ($lm, $rm, $de) =_compute_gaps($child);
+        $lmost = min($lm, $lmost);
+        $rmost = max($rm, $rmost);
+        $descs += $de;
+    }
+    $gaps{$node} = $rmost - $lmost - $descs;
+    return($lmost, $rmost, $descs + 1);
 }
 
 sub process_tree {
-    my ( $self, $xtree ) = @_;
+    my ($self, $root) = @_;
+    my @all = $root->descendants({add_self=>1});
+    %index_of = map {$all[$_] => $_} (0..$#all);
+    my @lines = ('') x @all;
 
-    # Initialize data structures
-    my @tree = ( [(undef) x 9] );
-    $tree[0]->[INDEX] = 0;
-    $tree[0]->[PRINT] = "";
-    $tree[0]->[XNODE] = undef;
-    $tree[0]->[PARENT] = 0;
-    $tree[0]->[SONS] = [];
-    $tree[0]->[PRINTED] = 0;
-    $tree[0]->[LEFTMOST] = 0;
-    $tree[0]->[RIGHTMOST] = 0;
-    $tree[0]->[DEPTH] = 0;
-
-    my @stack;
-    push @stack, $tree[0];
-
-    foreach my $xnode ($xtree->descendants) {
-        my $index = $xnode->ord;
-        $tree[$index] = [(undef) x 9];
-        $tree[$index]->[INDEX] = $index;
-        $tree[$index]->[LEFTMOST] = $index;
-        $tree[$index]->[RIGHTMOST] = $index;
-        $tree[$index]->[PRINT] = "";
-        $tree[$index]->[XNODE] = $xnode;
-        $tree[$index]->[PARENT] = $xnode->parent->ord;
-        $tree[$index]->[SONS] = [];
-        $tree[$index]->[PRINTED] = 0;
-        $tree[$index]->[DEPTH] = 0;
-    }
-
-    my $maxDepth=[map {[ (0) x $_ ]} reverse(1..(@tree+1))];
-    for my $index (1..$#{\@tree}){
-        push(@{$tree[$tree[$index]->[PARENT]]->[SONS]}, $tree[$index]);
-    }
-    fillLeftRightMost($tree[0]);
+    # Precompute the number of non-projective gaps for each subtree
+    _compute_gaps($root) if $self->minimize_cross;
 
     # Precompute lines for printing
-    while(my $node = pop @stack) {
-        my ($top,$bottom) = (0,0);
-        my $append=' ';
-        my $minSonOrSelf = min($node->[INDEX],(@{$node->[SONS]},($node))[0]->[INDEX]);
-        my $maxSonOrSelf = max($node->[INDEX],(($node),@{$node->[SONS]})[-1]->[INDEX]);
-        my $fillLen = $tree[$minSonOrSelf]->[DEPTH];
-        $fillLen=max($fillLen,$tree[$_]->[DEPTH]) for ($minSonOrSelf..$maxSonOrSelf);
-        for my $idx ($minSonOrSelf..$maxSonOrSelf) {
-            $append = ' ';
-            $append = '─' if $tree[$idx]->[PRINT] =~ m/[${H}${RT}${RB}${RV}]$/;
-            $tree[$idx]->[PRINT] .= "$append"x($fillLen-length($tree[$idx]->[PRINT])); ## justify to $fillLen
-        }
+    my @stack = ($root);
+    while (my $node = pop @stack) {
+        my @children = $node->children({add_self=>1});
+        my ($min_idx, $max_idx) = @index_of{ @children[0, -1] };
+        my $max_length = max( map{length $lines[$_]} ($min_idx..$max_idx) );
+        for my $idx ($min_idx..$max_idx) {
+            my $idx_node = $all[$idx];
+            my $filler = $lines[$idx] =~ m/[─┌└├]$/ ? '─' : ' ';
+            $lines[$idx] .= $filler x ($max_length - length $lines[$idx]);
 
-        $node->[PRINTED]=1 ;
-
-        # printing from leftmost son       SYMETRIC
-        $append=' ';
-        for my $idx ($minSonOrSelf..($node->[INDEX] - 1)) {
-            $append = $V  if $top;
-            if($tree[$idx]->[PARENT] == $node->[INDEX]) {
-                $append = $RB;
-                $append = $RV if $top;
-                $top=1;
-                if($tree[$idx]->[LEFTMOST] == $tree[$idx]->[RIGHTMOST]){
-                    $append .= $H . $self->nodeToString($tree[$idx]->[XNODE]);
-                    $tree[$idx]->[PRINTED] = 1;
+            my $min = $idx == $min_idx;
+            my $max = $idx == $max_idx;
+            if ($idx_node == $node) {
+                $lines[$idx] .= $DRAW[$max][$min] . $self->node_to_string($node);
+            } else {
+                if ($idx_node->parent != $node){
+                    $lines[$idx] .= $V;
+                } else {
+                    $lines[$idx] .= $SPACE[$max][$min];
+                    if ($idx_node->is_leaf){
+                        $lines[$idx] .= $H . $self->node_to_string($idx_node);
+                    } else {
+                        push @stack, $idx_node;
+                    }
                 }
-                push @stack, $tree[$idx]  unless $tree[$idx]->[PRINTED];
             }
-            $tree[$idx]->[PRINT] .= $append;
-            $tree[$idx]->[DEPTH] = length($tree[$idx]->[PRINT] );
         }
 
-        # printing from rightmost son       SYMETRIC
-        $append=' ';
-        for my $idx (reverse(($node->[INDEX] + 1)..$maxSonOrSelf)) {
-            $append = $V  if $bottom;
-            if($tree[$idx]->[PARENT] == $node->[INDEX]) {
-                $append = $RT;
-                $append = $RV if $bottom;
-                $bottom = 1;
-                if($tree[$idx]->[LEFTMOST] == $tree[$idx]->[RIGHTMOST]){
-                    $append .= $H . $self->nodeToString($tree[$idx]->[XNODE]);
-                    $tree[$idx]->[PRINTED] = 1;
-                }
-                push @stack, $tree[$idx] unless $tree[$idx]->[PRINTED];
-            }
-            $tree[$idx]->[PRINT] .= $append;
-            $tree[$idx]->[DEPTH] = length($tree[$idx]->[PRINT] );
-        }
-
-        # printing node
-        $node->[PRINT] .= ($bottom ? ($top ? $LV : $LB):($top ? $LT : $H)) . $self->nodeToString($node->[XNODE]);
-        $node->[DEPTH] = length($node->[PRINT]);
-
-        # sorting stack to minimize crossing of edges
-        @stack = sort {compareNode($a,$b);} @stack; ## TODO convert to heap !!!
+        # sorting the stack to minimize crossings of edges
+        @stack = sort {$gaps{$b} <=> $gaps{$a}} @stack if $self->minimize_cross;
     }
 
+    # TODO harmonize parameter names with with Write::CoNLLU
+    # TODO $tree->id should contain $bundle_id" . ($zone ? "/$zone" : '')
+    # TODO $tree->sentence vs. compute_sentence, but TextModeTrees should work on subtrees as well
     # Print the trees out
-# TODO
-#     if ( $self->tree_ids ){
-#         print { $self->_file_handle } "\n" . $xtree->id . "\n";
-#     }
-#     if ( $self->sents ){
-#         print { $self->_file_handle } $xtree->get_zone->sentence . "\n";
-#     }
-    for my $node (@tree) {
-        print "$node->[PRINT]\n" ;
+    if ( $self->tree_ids ){
+        my $bundle_id = $root->bundle->id;
+        my $zone = $root->zone;
+        say "# sent_id $bundle_id" . ($zone ? "/$zone" : '');
     }
+    if ( $self->sents ){
+        my $sentence = $root->compute_sentence();
+        say "# sentence $sentence";
+    }
+    say $_ for @lines;
     return;
 }
 
-sub fillLeftRightMost {
-    my $node = shift;
-
-    my @nodes=@{$node->[SONS]};
-    return unless @nodes;
-    for my $son (@nodes) {
-        fillLeftRightMost($son);
-        $node->[LEFTMOST] = min($node->[LEFTMOST] ,$son->[INDEX]);
-        $node->[RIGHTMOST] = max($node->[RIGHTMOST] ,$son->[INDEX]);
-    }
-    return;
-}
-
-sub compareNode {
-    my ( $a, $b ) = @_;
-    return ($a->[INDEX] < $b->[INDEX] and $a->[RIGHTMOST] < $b->[INDEX]) ||
-           ($a->[INDEX] > $b->[INDEX] and $a->[LEFTMOST] < $b->[INDEX]);
-}
-
-# Return word form and tag (and optionally afun/deprel)
-sub nodeToString {
+# Render a node with its attributes
+sub node_to_string {
     my ($self, $node) = @_;
-    return '' if (!$node);  # for roots
+    return '' if $node->is_root;
 
     my $str = $node->form // '';
     if ($node->upos || $node->deprel){
@@ -202,8 +137,8 @@ Udapi::Block::Write::TextModeTrees - legible dependency trees
 
 =head1 SYNOPSIS
 
- # print a.conll in a readable format
- treex Read::CoNLLX from=a.conll Write::TreexTXT indent=1 tree_ids=1
+ # is scenario
+ Write::TextModeTrees indent=1 tree_ids=1
 
 =head1 DESCRIPTION
 
@@ -244,36 +179,22 @@ will be printed (with indent=1 afuns=1) as
 
 =head1 PARAMETERS
 
-=over
-
-=item tree_ids
+=head2 tree_ids
 
 If set to 1, print tree (root) ID above each tree.
 
-=item indent
+=head2 indent
 
 number of characters to indent node depth in the tree for better readability
 
-=item sents
+=head2 sents
 
 If set to 1, print the corresponding sentence on one line above each tree.
 
-=item layer
-
-defaults to `a' (surface dependency trees). If set to `t', the block will print
-t-trees with functors and formemes instead of a-trees.
-
-=back
-
 =head1 AUTHORS
 
-Matyáš Kopp
-
-David Mareček <marecek@ufal.mff.cuni.cz>
-
-Ondřej Dušek <odusek@ufal.mff.cuni.cz>
-
 Martin Popel <popel@ufal.mff.cuni.cz>
+based on Treex block Write::TreesTXT by Matyáš Kopp
 
 =head1 COPYRIGHT AND LICENSE
 

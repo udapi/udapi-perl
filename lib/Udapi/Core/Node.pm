@@ -504,6 +504,14 @@ sub precedes {
     return $self->[$ORD] < $another_node->[$ORD];
 }
 
+use Udapi::Block::Write::TextModeTrees;
+
+sub print_subtree {
+    my $self = shift;
+    Udapi::Block::Write::TextModeTrees->new(@_)->process_tree($self);
+    return;
+}
+
 1;
 
 __END__
