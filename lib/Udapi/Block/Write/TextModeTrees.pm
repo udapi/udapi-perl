@@ -1,14 +1,26 @@
 package Udapi::Block::Write::TextModeTrees;
 use Udapi::Core::Common;
+use Term::ANSIColor qw(colored);
 extends 'Udapi::Core::Writer';
 
 has_ro tree_ids => ( isa => Bool, default => 0 );
 has_ro sents    => ( isa => Bool, default => 0 );
 has_ro indent   => ( isa => Int,  default => 1, doc => 'number of columns for better readability');
 has_ro minimize_cross => ( isa => Bool, default => 1, doc => 'minimize crossings of edges in non-projective trees');
+has_rw color      => ( default=> 'auto' );
+has_ro attributes => (default=>'form,upos,deprel');
+
+my %COLOR_OF = (
+    form => 'yellow',
+    lemma => 'cyan',
+    upos => 'bright_red',
+    deprel => 'bright_blue',
+    ord => 'bright_yellow',
+);
 
 # Symbols for drawing edges
 my (@DRAW, @SPACE, $H, $V);
+my @ATTRS;
 
 sub BUILD {
     my ($self) = @_;
@@ -27,6 +39,8 @@ sub BUILD {
     $SPACE[0][1] = $space . '┌';
     $SPACE[0][0] = $space . '├';
     $V           = $space . '│';
+
+    @ATTRS = split /,/, $self->attributes;
     return;
 }
 
@@ -110,19 +124,29 @@ sub process_tree {
     return;
 }
 
+sub before_process_document {
+    my ($self, $doc) = @_;
+    $self->SUPER::before_process_document($doc);
+    if ($self->color eq 'auto'){
+        $self->set_color(-t *STDOUT ? 1 : 0);
+    }
+    return;
+}
+
 # Render a node with its attributes
 sub node_to_string {
     my ($self, $node) = @_;
     return '' if $node->is_root;
-
-    my $str = $node->form // '';
-    if ($node->upos || $node->deprel){
-        $str .= '(';
-        $str .= $node->upos if $node->upos;
-        $str .= '/' . $node->deprel if $node->deprel;
-        $str .= ')';
+    my @values = $node->get_attrs(@ATTRS);
+    if ($self->color){
+        for my $i (0..$#ATTRS){
+            my $attr = $ATTRS[$i];
+            if (my $color = $COLOR_OF{$attr}){
+                $values[$i] = colored($values[$i], $color);
+            }
+        }
     }
-    return $str;
+    return join ' ', @values;
 }
 
 1;
