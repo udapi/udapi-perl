@@ -1,8 +1,7 @@
 package Udapi::Core::Files;
 use Udapi::Core::Common;
-#use PerlIO::gzip;
+use PerlIO::gzip;
 use File::Basename;
-use File::Slurp 9999.19;
 use Types::Standard qw(ArrayRef);
 
 has_ro filenames => ( writer => '_set_filenames', isa=>ArrayRef);
@@ -171,17 +170,6 @@ Filenames with extension ".gz" are opened via L<PerlIO::via::gzip> (ie. unzipped
 =head2 next_filehandle
 
 Returns the next filehandle (and increments the file_number).
-
-=head2 next_file_text
-
-Returns the content of the next file (slurp) and increments the file_number.
-
-=head2 next_line
-
-Returns the next line of the current file.
-If the end of file is reached and attribute C<join_files_for_next_line> is set to true (which is by default),
-the first line of next file is returned (and file_number incremented).
-
 
 =head2 $filenames_ref = string_to_filenames($string)
 
