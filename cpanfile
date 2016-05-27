@@ -7,6 +7,7 @@ requires 'List::Util', '1.33';
 requires 'Moo';
 requires 'Moo::Role';
 requires 'MooX::Options';
+requires 'MooX::TypeTiny';
 requires 'PerlIO::gzip';
 requires 'Scalar::Util';
 requires 'Term::ANSIColor';

@@ -3,12 +3,17 @@ use strict;
 use warnings;
 use 5.010;
 use utf8;
-use Moo;
 use Carp;
+use Import::Into;
+
+# We use all the packages here, so scan-prereqs-cpanfile finds them
+# and adds them to the list of dependencies in cpanfile.
+use Moo;
 use List::Util 1.33;
 use Scalar::Util;
 use Data::Printer;
-use Import::Into;
+use MooX::TypeTiny;
+use Types::Standard;
 
 sub import {
     my $caller = caller;
