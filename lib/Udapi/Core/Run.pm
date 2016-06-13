@@ -160,7 +160,7 @@ sub _construct_scenario_string_with_quoted_whitespace {
     my ($self) = @_;
     my @arguments;
     foreach my $arg (@ARGV) {
-        if ( $arg =~ /([^=\s]+)=(.*\s.*)$/ ) {
+        if ( $arg =~ /([^=\s]+)=(.*\s.*)$/s ) {
             my ( $name, $value ) = ( $1, $2 );
             $value =~ s/'/\\'/g;
             push @arguments, qq($name='$value');
