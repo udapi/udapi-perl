@@ -1,25 +1,17 @@
 package Udapi::Block::Read::Sentences;
 use Udapi::Core::Common;
-extends 'Udapi::Core::Block';
-#extends 'Udapi::Core::DocumentReader';
+use Udapi::Core::Node::Root;
+extends 'Udapi::Core::Reader';
 
-sub process_document {
+sub read_tree {
     my ($self, $doc) = @_;
-
-    # TODO $self->from
-    #open my $fh, '<:utf8', $conllu_file;
-    my $conllu_file = '/dev/stdin';
-    my $fh = \*STDIN;
-
-    while (my $line = <$fh>) {
-        chomp $line;
-        my $bundle = $doc->create_bundle();
-        my $root = $bundle->create_tree(); # TODO {selector=>''}
-        $root->set_sentence($line);
-    }
-
-    #close $fh;
-    return;
+    my $root = Udapi::Core::Node::Root->new();
+    my $fh = $self->filehandle;
+    my $line = <$fh>;
+    return undef if !defined $line;
+    chomp $line;
+    $root->set_sentence($line);
+    return $root;
 }
 
 1;
