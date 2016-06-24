@@ -11,6 +11,8 @@ has_ro focus => (default=>'.*');
 
 has_ro _stats => (default=>sub{{zones=>{}}});
 
+has_ro details => (default=>4);
+
 sub process_tree {
     my ($self, $pred_root) = @_;
     my $gold_root = $pred_root->bundle->get_tree($self->gold_zone);
@@ -23,9 +25,22 @@ sub process_tree {
     my @common = Algorithm::Diff::LCS( \@pred_tokens, \@gold_tokens );
 
     my $focus = $self->focus;
-    $self->_stats->{correct} += grep {/$focus/} @common;
-    $self->_stats->{pred}    += grep {/$focus/} @pred_tokens;
-    $self->_stats->{gold}    += grep {/$focus/} @gold_tokens;
+    if ($focus ne '.*') {
+        @common      = grep {/$focus/} @common;
+        @pred_tokens = grep {/$focus/} @pred_tokens;
+        @gold_tokens = grep {/$focus/} @gold_tokens;
+    }
+
+    $self->_stats->{correct} += @common;
+    $self->_stats->{pred}    += @pred_tokens;
+    $self->_stats->{gold}    += @gold_tokens;
+
+    if ($self->details){
+        $self->_stats->{C}{$_}++ for (@common);
+        $self->_stats->{P}{$_}++ for (@pred_tokens);
+        $self->_stats->{G}{$_}++ for (@gold_tokens);
+        $self->_stats->{T}{$_}++ for (@gold_tokens, @pred_tokens);
+    }
     return;
 }
 
@@ -45,6 +60,24 @@ sub process_end {
     }
     say "Comparing predicted trees (zone=@pz) with gold trees (zone="
         . $self->gold_zone . "), sentences=$pred_zones{$pz[0]}";
+
+    if ($self->details){
+        say '=== Details ===';
+        my $total_count = $self->_stats->{T};
+        my @tokens = sort {$total_count->{$b} <=> $total_count->{$a}} keys %{$total_count};
+        splice @tokens, $self->details;
+        printf "%-10s %5s %5s %5s %6s  %6s  %6s\n", qw(token pred gold corr prec rec F1);
+        foreach my $token (@tokens){
+            my ($p, $g, $c) = map {$self->_stats->{$_}{$token}||0} (qw(P G C));
+            my $pr = $c / ($p || 1);
+            my $re = $c / ($g || 1);
+            my $f  = 2 * $pr * $re / (($pr + $re)||1);
+            printf "%-10s %5d %5d %5d %6.2f%% %6.2f%% %6.2f%%\n",
+                $token, $p, $g, $c, 100*$pr, 100*$re, 100*$f
+        }
+        say '=== Totals ==='
+    }
+
     my ($pred, $gold, $correct) = @{$self->_stats}{qw(pred gold correct)};
     printf "%-9s = %7d\n"x3, predicted=>$pred, gold=>$gold, correct=>$correct;
     ($pred, $gold) = map {$_||1} ($pred, $gold); # prevent division by zero
@@ -52,6 +85,7 @@ sub process_end {
     my $rec  = $correct / $gold;
     my $f1   = 2 * $prec * $rec / (($prec + $rec)||1);
     printf "%-9s = %6.2f%%\n"x3, precision=>100*$prec, recall=>100*$rec, F1=>100*$f1;
+
     return;
 }
 
@@ -67,18 +101,32 @@ Udapi::Block::Eval::Diff - evaluate differences between sentences with P/R/F1
 
 =head1 SYNOPSIS
 
- # in scenario
  Eval::Diff zones=en_pred gold_zone=en_gold to=results.txt
 
- Eval::Diff zones=x gold_zone=y attributes=form,upos focus='^(a|the)_DET$'
-
- # prints e.g.
+ # prints something like
  predicted =     210
  gold      =     213
  correct   =     210
  precision = 100.00%
  recall    =  98.59%
  F1        =  99.29%
+
+ Eval::Diff gold_zone=y attributes=form,upos focus='^(?i:an?|the)_DET$' details=4
+
+ # prints something like
+ === Details ===
+ token       pred  gold  corr   prec     rec      F1
+ the_DET      711   213   188  26.44%  88.26%  40.69%
+ The_DET       82    25    19  23.17%  76.00%  35.51%
+ a_DET          0    62     0   0.00%   0.00%   0.00%
+ an_DET         0    16     0   0.00%   0.00%   0.00%
+ === Totals ===
+ predicted =     793
+ gold      =     319
+ correct   =     207
+ precision =  26.10%
+ recall    =  64.89%
+ F1        =  37.23%
 
 =head1 DESCRIPTION
 
@@ -134,6 +182,12 @@ e.g. C<attributes=form,upos focus='^(a|the)_DET$'>.
 
 For case-insensitive focus use e.g. C<focus='^(?i)the$'>
 (which is equivalent to C<focus='^[Tt][Hh][Ee]$'>)
+
+=head2 details
+
+Print also detailed statistics for each token (matching the C<focus>).
+The value of this parameter C<details> specifies the number of tokens to include.
+The tokens are sorted according to the sum of their I<predicted> and I<gold> counts.
 
 =head1 AUTHOR
 
