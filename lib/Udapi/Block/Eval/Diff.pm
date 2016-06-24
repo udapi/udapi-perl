@@ -31,6 +31,10 @@ sub process_tree {
 
 sub process_end {
     my ($self) = @_;
+
+    # Redirect the default filehandle to the file specified by $self->to
+    $self->before_process_document();
+
     my %pred_zones = %{$self->_stats->{zones}};
     my @pz = keys %pred_zones;
     if (!@pz) {
