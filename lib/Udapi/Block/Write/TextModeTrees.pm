@@ -1,6 +1,6 @@
 package Udapi::Block::Write::TextModeTrees;
 use Udapi::Core::Common;
-use Term::ANSIColor qw(colored);
+use Term::ANSIColor qw(colored colorstrip);
 extends 'Udapi::Core::Writer';
 
 has_ro tree_ids => ( isa => Bool, default => 0 );
@@ -65,6 +65,11 @@ sub _compute_gaps {
     return($lmost, $rmost, $descs + 1);
 }
 
+sub _length {
+    my ($self, $str) = @_;
+    return length colorstrip($str);
+}
+
 sub process_tree {
     my ($self, $root) = @_;
     my @all = $root->descendants({add_self=>1});
@@ -79,11 +84,11 @@ sub process_tree {
     while (my $node = pop @stack) {
         my @children = $node->children({add_self=>1});
         my ($min_idx, $max_idx) = @index_of{ @children[0, -1] };
-        my $max_length = max( map{length $lines[$_]} ($min_idx..$max_idx) );
+        my $max_length = max( map{$self->_length($lines[$_])} ($min_idx..$max_idx) );
         for my $idx ($min_idx..$max_idx) {
             my $idx_node = $all[$idx];
             my $filler = $lines[$idx] =~ m/[─┌└├]$/ ? '─' : ' ';
-            $lines[$idx] .= $filler x ($max_length - length $lines[$idx]);
+            $lines[$idx] .= $filler x ($max_length - $self->_length($lines[$idx]));
 
             my $min = $idx == $min_idx;
             my $max = $idx == $max_idx;
