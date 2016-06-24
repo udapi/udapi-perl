@@ -1,7 +1,32 @@
 package Udapi::Core::Block;
 use Udapi::Core::Common;
 
-has zones => ( is => 'ro', default => 'all' );
+has_ro zones => ( default => 'all' );
+
+has_ro bundles => ( default => 'all',
+    doc  => 'apply process_bundle only on the specified bundles,'
+          . ' e.g. "1-4,6,8-12". The default is "all". Useful for debugging.',
+);
+has_ro _is_bundle_selected => (writer=>'_set_is_bundle_selected');
+
+sub BUILD {
+    my ($self) = @_;
+    if ( $self->bundles ne 'all' ) {
+        confess 'bundles=' . $self->bundles . ' does not match /^\d+(-\d+)?(,\d+(-\d+)?)*$/'
+            if $self->bundles !~ /^\d+(-\d+)?(,\d+(-\d+)?)*$/;
+        my %selected;
+        foreach my $span ( split /,/, $self->bundles ) {
+            if ( $span =~ /(\d+)-(\d+)/ ) {
+                @selected{ $1 .. $2 } = ( $1 .. $2 );
+            }
+            else {
+                $selected{$span} = 1;
+            }
+        }
+        $self->_set_is_bundle_selected( \%selected );
+    }
+    return;
+}
 
 sub process_start {}
 sub process_end {}
@@ -23,8 +48,9 @@ sub process_document {
 
 sub _should_process_bundle {
     my ($self, $bundle) = @_;
-    # TODO: if ( !$self->select_bundles || $self->_is_bundle_selected->{$bundle->number} );
-    return 1;
+    return 1 if $self->bundles eq 'all';
+    return 1 if $self->_is_bundle_selected->{$bundle->number};
+    return 0;
 }
 
 sub _should_process_tree {

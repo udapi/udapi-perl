@@ -128,7 +128,8 @@ sub before_process_document {
     my ($self, $doc) = @_;
     $self->SUPER::before_process_document($doc);
     if ($self->color eq 'auto'){
-        $self->set_color(-t *STDOUT ? 1 : 0);
+        my $filehandle = select;
+        $self->set_color(-t $filehandle ? 1 : 0);
     }
     return;
 }

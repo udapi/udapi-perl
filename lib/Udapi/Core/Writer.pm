@@ -43,7 +43,7 @@ sub before_process_document {
         select STDOUT;
     } else {
         my $mode = '>:'.$self->encoding;
-        open my $FH, $mode, $filename;
+        open(my $FH, $mode, $filename);
         select $FH;
     }
     return;
