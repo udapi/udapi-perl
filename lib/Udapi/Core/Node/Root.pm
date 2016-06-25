@@ -98,12 +98,21 @@ sub deps {return '<ROOT>';}
 
 sub get_attrs {
     my $self = shift;
-    return map {
+    my $change_undefs_to;
+    if (ref $_[-1]) {
+        my $arg_ref       = pop @_;
+        $change_undefs_to = $arg_ref->{undefs};
+    }
+
+    my @values = map {
           $_ eq 'ord'    ? 0
         : $_ eq 'misc'   ? $self->[$MISC]
         : /^(form|lemma|[ux]pos|feats|deprel|deps)$/ ? '<ROOT>'
         : confess "Unknown attribute '$_'";
     } @_;
+
+    return @values if !defined $change_undefs_to;
+    return map {defined $_ ? $_ : $change_undefs_to} @values;
 }
 
 sub create_child {
