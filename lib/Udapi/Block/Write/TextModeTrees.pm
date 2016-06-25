@@ -3,12 +3,13 @@ use Udapi::Core::Common;
 use Term::ANSIColor qw(colored colorstrip);
 extends 'Udapi::Core::Writer';
 
-has_ro tree_ids => ( isa => Bool, default => 0 );
-has_ro sents    => ( isa => Bool, default => 0 );
+has_ro print_sent_id => ( isa=>Bool, default=>0 );
+has_ro print_sentence => ( isa=>Bool, default=>0 );
+has_rw add_empty_line => ( isa=>Bool, default=>1 );
 has_ro indent   => ( isa => Int,  default => 1, doc => 'number of columns for better readability');
 has_ro minimize_cross => ( isa => Bool, default => 1, doc => 'minimize crossings of edges in non-projective trees');
 has_rw color      => ( default=> 'auto' );
-has_ro attributes => (default=>'form,upos,deprel');
+has_ro attributes => ( default=>'form,upos,deprel' );
 
 my %COLOR_OF = (
     form => 'yellow',
@@ -90,8 +91,8 @@ sub process_tree {
             my $filler = $lines[$idx] =~ m/[─┌└├]$/ ? '─' : ' ';
             $lines[$idx] .= $filler x ($max_length - $self->_length($lines[$idx]));
 
-            my $min = $idx == $min_idx;
-            my $max = $idx == $max_idx;
+            my $min = ($idx == $min_idx);
+            my $max = ($idx == $max_idx);
             if ($idx_node == $node) {
                 $lines[$idx] .= $DRAW[$max][$min] . $self->node_to_string($node);
             } else {
@@ -112,20 +113,11 @@ sub process_tree {
         @stack = sort {$gaps{$b} <=> $gaps{$a}} @stack if $self->minimize_cross;
     }
 
-    # TODO harmonize parameter names with with Write::CoNLLU
-    # TODO $tree->id should contain $bundle_id" . ($zone ? "/$zone" : '')
-    # TODO $tree->sentence vs. compute_sentence, but TextModeTrees should work on subtrees as well
-    # Print the trees out
-    if ( $self->tree_ids ){
-        my $bundle_id = $root->bundle->id;
-        my $zone = $root->zone;
-        say "# sent_id $bundle_id" . ($zone ? "/$zone" : '');
-    }
-    if ( $self->sents ){
-        my $sentence = $root->compute_sentence();
-        say "# sentence $sentence";
-    }
+    # Print headers (if required) and the tree itself
+    say '# sent_id ' . $root->address()           if $self->print_sent_id;
+    say '# sentence ' . $root->compute_sentence() if $self->print_sentence;
     say $_ for @lines;
+    print "\n" if $self->add_empty_line;
     return;
 }
 
@@ -163,63 +155,93 @@ __END__
 
 =head1 NAME
 
-Udapi::Block::Write::TextModeTrees - legible dependency trees
+Udapi::Block::Write::TextModeTrees - print legible dependency trees
 
 =head1 SYNOPSIS
 
- # is scenario
- Write::TextModeTrees indent=1 tree_ids=1
+ # from command line (visualize CoNLL-U files)
+ udapi.pl Write::TextModeTrees color=1 < file.conllu | less -R
+
+ # is scenario (examples of other parameters)
+ Write::TextModeTrees indent=1 print_sent_id=1 print_sentence=1
+ Write::TextModeTrees zones=en,cs attributes=form,lemma,upos minimize_cross=0
 
 =head1 DESCRIPTION
 
-Trees written in plain text format format.
+This block prints dependency trees in plain-text format.
+For example the following CoNLL-U file (with tabs instead of spaces)
 
-For example the following conll file (with tabs instead of spaces)
+ 1  The        the        DET   _ _ 2  det       _ _
+ 2  third      third      ADJ   _ _ 5  nsubjpass _ _
+ 3  was        be         AUX   _ _ 5  aux       _ _
+ 4  being      be         AUX   _ _ 5  auxpass   _ _
+ 5  run        run        VERB  _ _ 0  root      _ _
+ 6  by         by         ADP   _ _ 8  case      _ _
+ 7  the        the        DET   _ _ 8  det       _ _
+ 9  of         of         ADP   _ _ 12 case      _ _
+ 8  head       head       NOUN  _ _ 5  nmod      _ _
+ 10 an         a          DET   _ _ 12 det       _ _
+ 11 investment investment NOUN  _ _ 12 compound  _ _
+ 12 firm       firm       NOUN  _ _ 8  nmod      _ SpaceAfter=No
+ 13 .          .          PUNCT _ _ 5  punct     _ _
 
- 1  We         PRP  _ _ _ 2  SBJ
- 2  gave       VBD  _ _ _ 0  ROOT
- 3  Kennedy    NNP  _ _ _ 2  IOBJ
- 4  no         DT   _ _ _ 7  NMOD
- 5  very       RB   _ _ _ 6  AMOD
- 6  positive   JJ   _ _ _ 7  NMOD
- 7  approval   NN   _ _ _ 2  OBJ
- 8  in         IN   _ _ _ 2  ADV
- 9  the        DT   _ _ _ 10 NMOD
- 10 margin     NN   _ _ _ 8  PMOD
- 11 of         IN   _ _ _ 10 NMOD
- 12 his        PRP$ _ _ _ 13 NMOD
- 13 preferment NN   _ _ _ 11 PMOD
-
-will be printed (with indent=1 afuns=1) as
+will be printed (with the default parameters) as
 
  ─┐
-  │ ┌──We(PRP/SBJ)
-  └─┤gave(VBD/ROOT)
-    ├──Kennedy(NNP/IOBJ)
-    │ ┌──no(DT/NMOD)
-    │ │ ┌──very(RB/AMOD)
-    │ ├─┘positive(JJ/NMOD)
-    ├─┘approval(NN/OBJ)
-    └─┐in(IN/ADV)
-      │ ┌──the(DT/NMOD)
-      └─┤margin(NN/PMOD)
-        └─┐of(IN/NMOD)
-          │ ┌──his(PRP$/NMOD)
-          └─┘preferment(NN/PMOD)
+  │   ┌──The DET det
+  │ ┌─┘third ADJ nsubjpass
+  │ ├──was AUX aux
+  │ ├──being AUX auxpass
+  └─┤run VERB root
+    │ ┌──by ADP case
+    │ ├──the DET det
+    ├─┤head NOUN nmod
+    │ │ ┌──of ADP case
+    │ │ ├──an DET det
+    │ │ ├──investment NOUN compound
+    │ └─┘firm NOUN nmod
+    └──. PUNCT punct
 
 =head1 PARAMETERS
 
-=head2 tree_ids
+=head2 print_sent_id
 
-If set to 1, print tree (root) ID above each tree.
+Print ID of the tree (its root, aka "sent_id") above each tree? Default = 0.
+
+=head2 print_sentence
+
+Print plain-text detokenized sentence on one line above each tree? Default = 0.
+
+=head2 add_empty_line
+
+Print an empty line after each tree? Default = 1.
 
 =head2 indent
 
-number of characters to indent node depth in the tree for better readability
+Number of characters to indent node depth in the tree for better readability.
+Default = 1.
 
-=head2 sents
+head2 minimize_cross
 
-If set to 1, print the corresponding sentence on one line above each tree.
+Minimize crossings of edges in non-projective trees? Default = 1.
+Trees without crossings are subjectively more readable,
+but usually in practice also "deeper", that is with higher maximal line length.
+
+head2 color
+
+Print the node attribute with ANSI terminal colors?
+Default = 'auto' which means that color output only if the output filehandle
+is interactive (console). Each attribute is assigned a color (the mapping is
+tested on black background terminals and can be changed only in source code).
+
+If you plan to pipe the output (e.g. to "less -R") and you want the colors,
+you need to set explicitly C<color=1>, see the example in Synopsis.
+
+head2 attributes
+
+A comma-separated list of node attributes which should be printed.
+Default = 'form,upos,deprel'.
+Possible values are I<ord, form, lemma, upos, xpos, feats, deprel, deps, misc>.
 
 =head1 AUTHORS
 
@@ -228,6 +250,6 @@ based on Treex block Write::TreesTXT by Matyáš Kopp
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright © 2011-2016 by Institute of Formal and Applied Linguistics, Charles University in Prague
+Copyright © 2016 by Institute of Formal and Applied Linguistics, Charles University in Prague
 
 This module is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
