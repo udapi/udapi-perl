@@ -69,7 +69,7 @@ sub process_document {
             my ($bundle_id, $zone) = split /\//, $tree_id;
             if (defined $zone){
                 confess "'$zone' is not a valid zone name (from tree_id='$tree_id')"
-                    if $zone !~ /^[a-z-]+(_[A-Za-z0-9-])?$/;
+                    if $zone !~ /^[a-z-]+(_[A-Za-z0-9-]+)?$/;
                 $root->_set_zone($zone);
             }
             $add_to_the_last_bundle = 1 if $bundle_id eq $last_bundle_id;
