@@ -185,7 +185,7 @@ sub compute_sentence {
     my $str = '';
     foreach my $node ($self->descendants){
         $str .= $node->form;
-        $str .= ' ' if $node->misc !~ /SpaceAfter=No/;
+        $str .= ' ' if ($node->misc||'') !~ /SpaceAfter=No/;
     }
     return $str;
 }

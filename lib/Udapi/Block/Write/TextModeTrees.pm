@@ -10,6 +10,7 @@ has_ro indent   => ( isa => Int,  default => 1, doc => 'number of columns for be
 has_ro minimize_cross => ( isa => Bool, default => 1, doc => 'minimize crossings of edges in non-projective trees');
 has_rw color      => ( default=> 'auto' );
 has_ro attributes => ( default=>'form,upos,deprel' );
+has_ro print_undef_as => (default=>'');
 
 my %COLOR_OF = (
     form => 'yellow',
@@ -135,7 +136,7 @@ sub before_process_document {
 sub node_to_string {
     my ($self, $node) = @_;
     return '' if $node->is_root;
-    my @values = $node->get_attrs(@ATTRS);
+    my @values = $node->get_attrs(@ATTRS, {undefs => $self->print_undef_as});
     if ($self->color){
         for my $i (0..$#ATTRS){
             my $attr = $ATTRS[$i];
@@ -202,6 +203,10 @@ will be printed (with the default parameters) as
     │ └─┘firm NOUN nmod
     └──. PUNCT punct
 
+This block's method C<process_tree> can be called on any node (not only root),
+which is useful for printing subtrees using C<$node-E<gt>print_subtree()>,
+which is internally implemented using this block.
+
 =head1 PARAMETERS
 
 =head2 print_sent_id
@@ -221,13 +226,13 @@ Print an empty line after each tree? Default = 1.
 Number of characters to indent node depth in the tree for better readability.
 Default = 1.
 
-head2 minimize_cross
+=head2 minimize_cross
 
 Minimize crossings of edges in non-projective trees? Default = 1.
 Trees without crossings are subjectively more readable,
 but usually in practice also "deeper", that is with higher maximal line length.
 
-head2 color
+=head2 color
 
 Print the node attribute with ANSI terminal colors?
 Default = 'auto' which means that color output only if the output filehandle
@@ -237,11 +242,16 @@ tested on black background terminals and can be changed only in source code).
 If you plan to pipe the output (e.g. to "less -R") and you want the colors,
 you need to set explicitly C<color=1>, see the example in Synopsis.
 
-head2 attributes
+=head2 attributes
 
 A comma-separated list of node attributes which should be printed.
 Default = 'form,upos,deprel'.
 Possible values are I<ord, form, lemma, upos, xpos, feats, deprel, deps, misc>.
+
+=head2 print_undef_as
+
+What should be printed instead of undefined attribute values (if any)?
+Default = empty string.
 
 =head1 AUTHORS
 
