@@ -69,7 +69,7 @@ __END__
 
 =head1 NAME
 
-Udapi::Completion::Plugins::Treex - Bash completion for udapi.pl
+Bash::Completion::Plugins::Udapi - Bash completion for udapi.pl
 
 =head1 SYNOPSIS
  
