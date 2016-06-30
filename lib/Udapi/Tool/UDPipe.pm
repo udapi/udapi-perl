@@ -1,7 +1,13 @@
 package Udapi::Tool::UDPipe;
 use Udapi::Core::Common;
-use Udapi::Core::Node::Root;
 use Ufal::UDPipe;
+
+# TODO: it should be faster to use UDPipe Pipeline class with CoNLL-U output
+# and parse this output to Udapi trees:
+#  open my $fh, '>', \$udpipe_conllu_output_string;
+#  my $root = $doc->_read_conllu_tree_from_fh($fh, 'UDPipe output');
+# However, we would need a new version of UDPipe first with a special input format
+# for segmented untokenized text (so UDPipe does tokenization, but not segmentation).
 
 has_ro model_file => (required=>1);
 
