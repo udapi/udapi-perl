@@ -18,6 +18,18 @@ BEGIN {
     ($FORM, $LEMMA, $UPOS, $XPOS, $FEATS, $DEPREL, $DEPS)    = (6..12);
 }
 
+my %INDEX_OF_ATTR = (
+    ord    => $ORD,
+    form   => $FORM,
+    lemma  => $LEMMA,
+    upos   => $UPOS,
+    xpos   => $XPOS,
+    feats  => $FEATS,
+    deprel => $DEPREL,
+    deps   => $DEPS,
+    misc   => $MISC,
+);
+
 use Class::XSAccessor::Array {
     setters => { map {('set_'.$ATTRS[$_] => $_)} ($MISC..$DEPS) },
     getters => { map {(       $ATTRS[$_] => $_)} (0..12) },
@@ -491,18 +503,7 @@ sub get_attrs {
         $change_undefs_to = $arg_ref->{undefs};
     }
 
-    my @values = map {
-          $_ eq 'ord'    ? $self->[$ORD]
-        : $_ eq 'form'   ? $self->[$FORM]
-        : $_ eq 'lemma'  ? $self->[$LEMMA]
-        : $_ eq 'upos'   ? $self->[$UPOS]
-        : $_ eq 'xpos'   ? $self->[$XPOS]
-        : $_ eq 'feats'  ? $self->[$FEATS]
-        : $_ eq 'deprel' ? $self->[$DEPREL]
-        : $_ eq 'deps'   ? $self->[$DEPS]
-        : $_ eq 'misc'   ? $self->[$MISC]
-        : confess "Unknown attribute '$_'";
-    } @_;
+    my @values = map {$self->[$INDEX_OF_ATTR{$_} // confess "Unknown attribute '$_'"]} @_;
 
     return @values if !defined $change_undefs_to;
     return map {defined $_ ? $_ : $change_undefs_to} @values;
