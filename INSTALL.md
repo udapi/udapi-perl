@@ -31,7 +31,7 @@ cd
 git clone https://github.com/udapi/udapi-perl.git
 cpanm --installdeps ./udapi-perl
 echo '## Use Udapi from ~/udapi-perl/ ##'               >> ~/.bashrc
-echo 'export PATH="$HOME/udapi-perl/script:$PATH"       >> ~/.bashrc
+echo 'export PATH="$HOME/udapi-perl/script:$PATH"'      >> ~/.bashrc
 echo 'export PERL5LIB="$HOME/udapi-perl/lib:$PERL5LIB"' >> ~/.bashrc
 source ~/.bashrc # or open new bash
 ```
