@@ -57,7 +57,7 @@ sub set_parent {
     # but we can do it faster without extra sub call.
     if ($self == $parent){
         return if $args && $args->{cycles} eq 'skip';
-        my $b_id = $self->bundle->id;
+        my $b_id = $self->bundle->bundle_id;
         my $n_id = $self->ord;
         confess "Bundle $b_id: Attempt to set parent of $n_id to itself (cycle).";
     }
@@ -66,7 +66,7 @@ sub set_parent {
         while ($grandpa) {
             if ($grandpa == $self){
                 return if $args && $args->{cycles} eq 'skip';
-                my $b_id = $self->bundle->id;
+                my $b_id = $self->bundle->bundle_id;
                 my $n_id = $self->ord;
                 my $p_id = $parent->ord;
                 confess "Bundle $b_id: Attempt to set parent of $n_id to the node $p_id, which would lead to a cycle.";

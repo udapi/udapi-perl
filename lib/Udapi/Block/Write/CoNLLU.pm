@@ -14,11 +14,8 @@ sub process_tree {
     # we need to skip the whole tree (including possible comments).
     return if !@nodes && !$self->print_empty_trees;
 
-    if ($self->print_sent_id) {
-        my $bundle_id = $tree->bundle->id;
-        my $zone = $tree->zone;
-        say "# sent_id $bundle_id" . ($zone ? "/$zone" : '');
-    }
+    say '# sent_id ' . $root->address() if $self->print_sent_id;
+
     if ($self->print_sentence) {
         my $sentence = $tree->sentence;
         say "# sentence $sentence" if length $sentence;

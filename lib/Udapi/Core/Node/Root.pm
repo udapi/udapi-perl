@@ -18,14 +18,14 @@ my (
 
 BEGIN {
     @ATTRS = qw(ord root parent firstchild nextsibling misc
-                descendants bundle zone sentence id);
+                descendants bundle zone sentence sent_id);
     ($ORD, $ROOT, $PARENT, $FIRSTCHILD, $NEXTSIBLING, $MISC) = (0..5);
     ($DESCENDANTS, $BUNDLE, $ZONE, $SENTENCE, $ID)           = (6..10);
 }
 
 use Class::XSAccessor::Array {
-    setters => { _set_zone=>$ZONE, _set_bundle=>$BUNDLE, set_misc=>$MISC, set_sentence=>$SENTENCE, set_id=>$ID },
-    getters => { zone=>$ZONE, bundle=>$BUNDLE, misc=>$MISC, sentence=>$SENTENCE, id=>$ID },
+    setters => { _set_zone=>$ZONE, _set_bundle=>$BUNDLE, set_misc=>$MISC, set_sentence=>$SENTENCE, set_sent_id=>$ID },
+    getters => { zone=>$ZONE, bundle=>$BUNDLE, misc=>$MISC, sentence=>$SENTENCE, sent_id=>$ID },
 };
 
 sub new {
@@ -43,7 +43,7 @@ sub set_zone {
     confess "'$zone' is not a valid zone name (/^[a-z-]+(_[A-Za-z0-9-]+)?$/)" if $zone !~ /^[a-z-]+(_[A-Za-z0-9-]+)?$/;
     confess "'all' cannot be used as a zone name" if $zone eq 'all';
     my $bundle = $self->[$BUNDLE];
-    confess "Tree with zone '$zone' already exists in bundle " . $bundle->id
+    confess "Tree with zone '$zone' already exists in bundle " . $bundle->bundle_id
         if $bundle && any {$zone eq $_->zone} $bundle->trees;
     $self->[$ZONE] = $zone;
     return;
@@ -172,7 +172,7 @@ sub _copy_subtree {
 }
 
 sub address {
-    return $_[0][$BUNDLE]->id . ($_[0][$ZONE] eq '' ? '' : '/' . $_[0][$ZONE]);
+    return $_[0][$BUNDLE]->bundle_id . ($_[0][$ZONE] eq '' ? '' : '/' . $_[0][$ZONE]);
 }
 
 sub shift_before_node    { confess 'Cannot call shift_* methods on root';}

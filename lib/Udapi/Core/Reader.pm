@@ -64,11 +64,11 @@ sub process_document {
     while (my $root = $self->read_tree($doc)){
         my $add_to_the_last_bundle = 0;
 
-        my $tree_id = $root->id;
-        if (defined $tree_id) {
-            my ($bundle_id, $zone) = split /\//, $tree_id;
+        my $sent_id = $root->sent_id;
+        if (defined $sent_id) {
+            my ($bundle_id, $zone) = split /\//, $sent_id;
             if (defined $zone){
-                confess "'$zone' is not a valid zone name (from tree_id='$tree_id')"
+                confess "'$zone' is not a valid zone name (from sent_id='$sent_id')"
                     if $zone !~ /^[a-z-]+(_[A-Za-z0-9-]+)?$/;
                 $root->_set_zone($zone);
             }
@@ -92,8 +92,8 @@ sub process_document {
 
             if (@orig_bundles){
                 $bundle = shift @orig_bundles;
-                if ($last_bundle_id && $last_bundle_id ne $bundle->id){
-                    warn 'Mismatch in bundle IDs: '.$bundle->id. " vs. $last_bundle_id. Keeping the former one.";
+                if ($last_bundle_id && $last_bundle_id ne $bundle->bundle_id){
+                    warn 'Mismatch in bundle IDs: '.$bundle->bundle_id. " vs. $last_bundle_id. Keeping the former one.";
                 }
             } else {
                 $bundle = $doc->create_bundle();

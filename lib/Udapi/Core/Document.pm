@@ -18,33 +18,33 @@ sub create_bundle {
     my ($self, $args) = @_;
     # TODO args->{before} args->{after}
     my $bundle = Udapi::Core::Bundle->new();
-    my $id = ++$self->{_highest_bundle_id};
-    $bundle->set_id($id);
+    my $bundle_id = ++$self->{_highest_bundle_id};
+    $bundle->set_bundle_id($bundle_id);
     $bundle->_set_number(1 + @{$self->{_bundles}});
     $bundle->_set_document($self);
     push @{$self->{_bundles}}, $bundle;
     return $bundle;
 }
 
-# Based on $root->id the tree is added either to the last existing bundle or to a new bundle.
-# $root->id should contain "$bundle_id/$zone".
+# Based on $root->sent_id the tree is added either to the last existing bundle or to a new bundle.
+# $root->sent_id should contain "$bundle_id/$zone".
 # The "/$zone" part is optional. If missing, an empty-string zone is used for the new tree.
 sub add_tree {
     my ($self, $root) = @_;
     my $add_to_the_last_bundle = 1;
-    my $tree_id = $root->id;
-    if (!defined $tree_id) {
+    my $sent_id = $root->sent_id;
+    if (!defined $sent_id) {
         $self->create_bundle()->add_tree($root);
     }
     else {
-        my ($bundle_id, $zone) = split /\//, $tree_id;
+        my ($bundle_id, $zone) = split /\//, $sent_id;
         if (defined $zone){
-            confess "'$zone' is not a valid zone name (from tree_id='$tree_id')"
+            confess "'$zone' is not a valid zone name (from sent_id='$sent_id')"
                 if $zone !~ /^[a-z-]*(_[A-Za-z0-9-])?$/;
             $root->_set_zone($zone);
         }
         my $last_bundle = $self->{_bundles}[-1];
-        if (!$last_bundle || $last_bundle->id ne $bundle_id){
+        if (!$last_bundle || $last_bundle->bundle_id ne $bundle_id){
             $last_bundle = $self->create_bundle();
             $last_bundle->set_id($bundle_id);
         }
@@ -84,7 +84,7 @@ sub _read_conllu_tree_from_fh {
         last LINE if $line eq '';
         if ($line =~ s/^#// ){
             if ($line =~ /^\s*sent_id\s+(\S+)/) {
-                $root->set_id($1);
+                $root->set_sent_id($1);
             # TODO: see https://github.com/UniversalDependencies/docs/issues/273
             # and decide whether it should be "sentence-text:", "text" or what.
             } elsif ($line =~ /^\s*sentence\s+(.*)$/) {
@@ -135,7 +135,7 @@ sub _read_conllu_tree_from_fh {
             my $grandpa = $parent->[$PARENT];
             while ($grandpa) {
                 if ($grandpa == $node){
-                    my $b_id = $node->bundle->id;
+                    my $b_id = $node->bundle->bundle_id;
                     my $p_id = $parent->ord;
                     confess "Conllu file $error_context (before line $.) contains a cycle: nodes $id and $p_id.";
                 }

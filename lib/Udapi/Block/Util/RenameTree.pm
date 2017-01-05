@@ -7,7 +7,7 @@ has_ro to_zone => (required=>1);
 sub process_tree {
     my ( $self, $root ) = @_;
     my $to_zone = $self->to_zone;
-    confess "Tree with zone '$to_zone' already exists in bundle " . $root->bundle->id
+    confess "Tree with zone '$to_zone' already exists in bundle " . $root->bundle->bundle_id
         if any {$to_zone eq $_->zone} $root->bundle->trees;
     $root->_set_zone($to_zone);
     return;

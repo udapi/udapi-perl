@@ -14,12 +14,12 @@ BEGIN {
 use Class::XSAccessor::Array {
     constructor => 'new',
     setters => {
-        set_id => $ID,
+        set_bundle_id => $ID,
         _set_document => $DOC,
         _set_number => $NUMBER,
     },
     getters => {
-        id => $ID,
+        bundle_id => $ID,
         document => $DOC,
         number => $NUMBER,
     },
@@ -45,7 +45,7 @@ sub add_tree {
         confess "'$zone' is not a valid zone name (/^[a-z-]*(_[A-Za-z0-9-]+)?\$/)" if $zone !~ /^[a-z-]*(_[A-Za-z0-9-]+)?$/;
         confess "'all' cannot be used as a zone name" if $zone eq 'all';
     }
-    confess "Tree with zone '$zone' already exists in bundle " . $self->id
+    confess "Tree with zone '$zone' already exists in bundle " . $self->bundle_id
         if any {$zone eq $_->zone} @{$self->[$TREES]};
 
     $root->_set_bundle($self);
