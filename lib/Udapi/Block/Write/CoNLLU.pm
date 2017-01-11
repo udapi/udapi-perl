@@ -14,7 +14,7 @@ sub process_tree {
     # we need to skip the whole tree (including possible comments).
     return if !@nodes && !$self->print_empty_trees;
 
-    say '# sent_id ' . $root->address() if $self->print_sent_id;
+    say '# sent_id ' . $tree->address() if $self->print_sent_id;
 
     if ($self->print_sentence) {
         my $sentence = $tree->sentence;
