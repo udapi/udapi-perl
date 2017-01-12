@@ -40,7 +40,7 @@ sub process_document {
                 print ',';
             }
             print qq("$zone":{"sentence":");
-            print _esc($tree->sentence);
+            print _esc($tree->text);
             say qq'","trees":{"a":{"language":"$zone","nodes":[';
             say ' {"id":' . _id($tree) . ',"parent":null,"firstson":'
                 . _id($tree->firstchild)

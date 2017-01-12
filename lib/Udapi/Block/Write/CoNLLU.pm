@@ -3,7 +3,7 @@ use Udapi::Core::Common;
 extends 'Udapi::Core::Writer';
 
 has_rw print_sent_id => (isa=>Bool, default=>1);
-has_rw print_sentence => (isa=>Bool, default=>1);
+has_rw print_text => (isa=>Bool, default=>1);
 has_rw print_empty_trees => (isa=>Bool, default=>1);
 
 sub process_tree {
@@ -14,11 +14,11 @@ sub process_tree {
     # we need to skip the whole tree (including possible comments).
     return if !@nodes && !$self->print_empty_trees;
 
-    say '# sent_id ' . $tree->address() if $self->print_sent_id;
+    say '# sent_id = ' . $tree->address() if $self->print_sent_id;
 
-    if ($self->print_sentence) {
-        my $sentence = $tree->sentence;
-        say "# sentence $sentence" if length $sentence;
+    if ($self->print_text) {
+        my $sentence = $tree->text;
+        say "# text = $sentence" if length $sentence;
     }
 
     my $comment = $tree->misc;

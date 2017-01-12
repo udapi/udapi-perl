@@ -39,7 +39,7 @@ SKIP:
     is_deeply( \@forms, \@expected_forms, 'tokenize_string - forms' );
 
     my $root = Udapi::Core::Node::Root->new();
-    $root->set_sentence($sentence_string);
+    $root->set_text($sentence_string);
     $udpipe->tokenize_tree($root);
     @nodes = $root->descendants;
     @forms   = map { $_->form } @nodes;

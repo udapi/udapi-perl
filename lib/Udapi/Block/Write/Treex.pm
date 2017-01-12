@@ -38,7 +38,7 @@ sub process_tree {
     my ($self, $tree) = @_;
     my $bundle_number = $tree->bundle->number;
     my $root_id = "a-$bundle_number";
-    my $sentence = $tree->sentence;
+    my $sentence = $tree->text;
     my ($language, $selector) = split /_/, $tree->zone;
     $language ||= 'und';
     $selector ||= '';

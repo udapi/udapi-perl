@@ -1,12 +1,10 @@
-package Udapi::Block::Util::SetSentence;
+package Udapi::Block::Util::ComputeText;
 use Udapi::Core::Common;
 extends 'Udapi::Core::Block';
 
 sub process_tree {
     my ( $self, $root ) = @_;
-    # TODO SpaceAfter=No
-    # TODO see Write::Sentences
-    $root->set_sentence(join ' ', map {$_->form} $root->descendants);
+    $root->set_text($root->compute_text());
     return;
 }
 
@@ -20,18 +18,18 @@ __END__
 
 =head1 NAME
 
-Udapi::Block::Util::SetSentence - fill $root->sentence attribute
+Udapi::Block::Util::ComputeText - fill $root->text attribute
 
 =head1 SYNOPSIS
 
   # on the command line
-  Util::SetSentence
+  Util::ComputeText
 
 =head1 DESCRIPTION
 
-Currently, this block fills the C<$root-E<gt>sentence> attribute
-just by concatenating all word forms separated by spaces.
-In future, it should consider the SpaceAfter=No attribute.
+Currently, this block fills the C<$root-E<gt>text> attribute
+just by concatenating all word forms separated by spaces
+and considering the SpaceAfter=No attribute.
 
 =head1 AUTHOR
 

@@ -145,7 +145,7 @@ C<data/models/udpipe/ancient-greek-ud-1.2-160523.udpipe>.
 
 Do tokenization, i.e. create new nodes with attributes
 C<form>, C<misc> (if SpaceAfter=No) and C<ord>.
-The sentence string is taken from the zone's attribute C<sentence>.
+The sentence string is taken from the root's attribute C<text>.
 
 =head1 tag
 

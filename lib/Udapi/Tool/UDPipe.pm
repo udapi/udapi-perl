@@ -18,11 +18,11 @@ sub _build__model_absolute_path {
     my $model = $self->model;
     return $model if $model =~ m{^[/.]};
     # TODO  $ENV{UDAPI_SHARE} and auto-download
-    my $share = $ENV{HOME} . '/tmt/share/';
+    my $share = $ENV{HOME} . '/treex/share/';
     return $share . $self->model;
 }
 
-# Instance of Ufal::UDPipe::Mod el
+# Instance of Ufal::UDPipe::Model
 has_rw tool => ();
 has_rw tokenizer => ();
 
@@ -68,7 +68,7 @@ sub tokenize_tree {
     my ( $self, $root ) = @_;
     my $u_sentence = Ufal::UDPipe::Sentence->new();
     my $tokenizer  = $self->tokenizer;
-    $tokenizer->setText( $root->sentence );
+    $tokenizer->setText( $root->text );
     while ( $tokenizer->nextSentence($u_sentence) ) {
         my $u_words = $u_sentence->{words};
         for my $i ( 1 .. $u_words->size - 1 ) {
@@ -187,9 +187,9 @@ sub tag_parse_tree {
 
 sub tokenize_tag_parse_tree {
     my ($self, $root) = @_;
-    my $string = $root->sentence;
+    my $string = $root->text;
     confess 'must be called on an empty tree' if $root->children;
-    confess 'empty sentence' if !length $string;
+    confess 'empty sentence text' if !length $string;
 
     # tokenization (I cannot turn off segmenter, so I need to join the segments)
     my $tokenizer = $self->tokenizer;
@@ -257,7 +257,7 @@ Udapi::Tool::UDPipe - wrapper for Ufal::UDPipe
  my @forms = $udpipe->tokenize_string(q{I don't know.});
 
  my $root = Udapi::Core::Node::Root->new();
- $root->set_sentence(q{I don't know.});
+ $root->set_text(q{I don't know.});
  $udapi->tokenize_tree($root);
 
  my @nodes = $root->get_descendants({ordered=>1});

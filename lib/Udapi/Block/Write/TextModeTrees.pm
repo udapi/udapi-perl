@@ -4,7 +4,7 @@ use Term::ANSIColor qw(colored colorstrip);
 extends 'Udapi::Core::Writer';
 
 has_ro print_sent_id => ( isa=>Bool, default=>0 );
-has_ro print_sentence => ( isa=>Bool, default=>0 );
+has_ro print_text => ( isa=>Bool, default=>0 );
 has_rw add_empty_line => ( isa=>Bool, default=>1 );
 has_ro indent   => ( isa => Int,  default => 1, doc => 'number of columns for better readability');
 has_ro minimize_cross => ( isa => Bool, default => 1, doc => 'minimize crossings of edges in non-projective trees');
@@ -115,8 +115,8 @@ sub process_tree {
     }
 
     # Print headers (if required) and the tree itself
-    say '# sent_id ' . $root->address()           if $self->print_sent_id;
-    say '# sentence ' . $root->compute_sentence() if $self->print_sentence;
+    say '# sent_id = ' . $root->address()   if $self->print_sent_id;
+    say '# text = ' . $root->compute_text() if $self->print_text;
     say $_ for @lines;
     print "\n" if $self->add_empty_line;
     return;
@@ -164,7 +164,7 @@ Udapi::Block::Write::TextModeTrees - print legible dependency trees
  udapi.pl Write::TextModeTrees color=1 < file.conllu | less -R
 
  # is scenario (examples of other parameters)
- Write::TextModeTrees indent=1 print_sent_id=1 print_sentence=1
+ Write::TextModeTrees indent=1 print_sent_id=1 print_text=1
  Write::TextModeTrees zones=en,cs attributes=form,lemma,upos minimize_cross=0
 
 =head1 DESCRIPTION
@@ -213,9 +213,9 @@ which is internally implemented using this block.
 
 Print ID of the tree (its root, aka "sent_id") above each tree? Default = 0.
 
-=head2 print_sentence
+=head2 print_text
 
-Print plain-text detokenized sentence on one line above each tree? Default = 0.
+Print plain-text detokenized sentence text on one line above each tree? Default = 0.
 
 =head2 add_empty_line
 

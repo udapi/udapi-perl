@@ -6,16 +6,14 @@ has_ro if_missing => ( default => 'detokenize',); #isa => enum([qw(detokenize em
 
 sub process_tree {
     my ($self, $tree) = @_;
-    my $sentence = $tree->sentence;
-    if (!defined $sentence){
+    my $sentence_text = $tree->text;
+    if (!defined $sentence_text){
         my $what = $self->if_missing;
         if ($what eq 'detokenize') {
-            # TODO SpaceAfter=No
-            # TODO see Util::SetSentence
-            $sentence = join ' ', map {$_->form} $tree->descendants();
+            $sentence_text = $tree->compute_text();
         }
         elsif ($what eq 'empty') {
-            $sentence = '';
+            $sentence_text = '';
         }
         else {
             my $msg = 'Sentence ' . $tree->bundle->number . ' is undefined';
@@ -23,7 +21,7 @@ sub process_tree {
             warn $msg;
         }
     }
-    say $sentence;
+    say $sentence_text;
     return;
 }
 

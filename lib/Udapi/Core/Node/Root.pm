@@ -18,14 +18,14 @@ my (
 
 BEGIN {
     @ATTRS = qw(ord root parent firstchild nextsibling misc
-                descendants bundle zone sentence sent_id);
+                descendants bundle zone text sent_id);
     ($ORD, $ROOT, $PARENT, $FIRSTCHILD, $NEXTSIBLING, $MISC) = (0..5);
     ($DESCENDANTS, $BUNDLE, $ZONE, $SENTENCE, $ID)           = (6..10);
 }
 
 use Class::XSAccessor::Array {
-    setters => { _set_zone=>$ZONE, _set_bundle=>$BUNDLE, set_misc=>$MISC, set_sentence=>$SENTENCE, set_sent_id=>$ID },
-    getters => { zone=>$ZONE, bundle=>$BUNDLE, misc=>$MISC, sentence=>$SENTENCE, sent_id=>$ID },
+    setters => { _set_zone=>$ZONE, _set_bundle=>$BUNDLE, set_misc=>$MISC, set_text=>$SENTENCE, set_sent_id=>$ID },
+    getters => { zone=>$ZONE, bundle=>$BUNDLE, misc=>$MISC, text=>$SENTENCE, sent_id=>$ID },
 };
 
 sub new {
@@ -180,7 +180,7 @@ sub shift_after_node     { confess 'Cannot call shift_* methods on root';}
 sub shift_before_subtree { confess 'Cannot call shift_* methods on root';}
 sub shift_after_subtree  { confess 'Cannot call shift_* methods on root';}
 
-sub compute_sentence {
+sub compute_text {
     my ($self) = @_;
     my $str = '';
     foreach my $node ($self->descendants){

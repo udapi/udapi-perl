@@ -10,7 +10,7 @@ sub read_tree {
     my $line = <$fh>;
     return undef if !defined $line;
     chomp $line;
-    $root->set_sentence($line);
+    $root->set_text($line);
     return $root;
 }
 

@@ -83,12 +83,10 @@ sub _read_conllu_tree_from_fh {
         chomp $line;
         last LINE if $line eq '';
         if ($line =~ s/^#// ){
-            if ($line =~ /^\s*sent_id\s+(\S+)/) {
+            if ($line =~ /^\s*sent_id\s*=\s*(\S+)/) {
                 $root->set_sent_id($1);
-            # TODO: see https://github.com/UniversalDependencies/docs/issues/273
-            # and decide whether it should be "sentence-text:", "text" or what.
-            } elsif ($line =~ /^\s*sentence\s+(.*)$/) {
-                $root->set_sentence($1);
+            } elsif ($line =~ /^\s*text\s*=\s*(.*)$/) {
+                $root->set_text($1);
             } else {
                 $comment = $comment . $line . "\n";
             }
@@ -166,34 +164,6 @@ sub load_conllu {
         $bundle->add_tree($root);
     }
 
-    close $fh;
-    return;
-}
-
-sub save_conllu {
-    my ($self, $conllu_file) = @_;
-    open my $fh, '>:utf8', $conllu_file;
-    my @nodes;
-    foreach my $bundle ($self->bundles){
-        foreach my $tree ($bundle->trees){
-            @nodes = $tree->descendants;
-            # Empty sentences are not allowed in CoNLL-U.
-            next if !@nodes;
-            my $comment = $tree->misc;
-            if (length $comment){
-                chomp $comment;
-                $comment =~ s/\n/\n#/g;
-                print {$fh} "#", $comment, "\n";
-            }
-            foreach my $node (@nodes){
-                print {$fh} join("\t", map {(defined $_ and $_ ne '') ? $_ : '_'}
-                    $node->ord, $node->form, $node->lemma, $node->upos, $node->xpos,
-                    $node->feats, $node->parent->ord, $node->deprel, $node->deps, $node->misc,
-                ), "\n";
-            }
-            print {$fh} "\n";
-        }
-    }
     close $fh;
     return;
 }
