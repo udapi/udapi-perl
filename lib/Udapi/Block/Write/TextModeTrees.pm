@@ -3,13 +3,13 @@ use Udapi::Core::Common;
 use Term::ANSIColor qw(colored colorstrip);
 extends 'Udapi::Core::Writer';
 
-has_ro print_sent_id => ( isa=>Bool, default=>0 );
-has_ro print_text => ( isa=>Bool, default=>0 );
+has_ro print_sent_id  => ( isa=>Bool, default=>0 );
+has_ro print_text     => ( isa=>Bool, default=>0 );
 has_rw add_empty_line => ( isa=>Bool, default=>1 );
-has_ro indent   => ( isa => Int,  default => 1, doc => 'number of columns for better readability');
+has_ro indent         => ( isa => Int,  default => 1, doc => 'number of columns for better readability');
 has_ro minimize_cross => ( isa => Bool, default => 1, doc => 'minimize crossings of edges in non-projective trees');
-has_rw color      => ( default=> 'auto' );
-has_ro attributes => ( default=>'form,upos,deprel' );
+has_rw color          => ( default=> 'auto' );
+has_ro attributes     => ( default=>'form,upos,deprel' );
 has_ro print_undef_as => (default=>'');
 
 my %COLOR_OF = (
@@ -21,7 +21,7 @@ my %COLOR_OF = (
 );
 
 # Symbols for drawing edges
-my (@DRAW, @SPACE, $H, $V);
+my (@DRAW, @SPACE, $HORIZ, @VERT);
 my @ATTRS;
 
 sub BUILD {
@@ -29,8 +29,8 @@ sub BUILD {
 
     # $DRAW[bottom-most][top-most]
     my $line = '─' x $self->indent;
-    $H          = $line . '─';
-    $DRAW[1][1] = $H;
+    $HORIZ      = $line . '─';
+    $DRAW[1][1] = $HORIZ;
     $DRAW[1][0] = $line . '┘';
     $DRAW[0][1] = $line . '┐';
     $DRAW[0][0] = $line . '┤';
@@ -40,7 +40,10 @@ sub BUILD {
     $SPACE[1][0] = $space . '└';
     $SPACE[0][1] = $space . '┌';
     $SPACE[0][0] = $space . '├';
-    $V           = $space . '│';
+
+    # $VERT[is_crossing]
+    $VERT[0] = $space . '│';
+    $VERT[1] = $line  . '╪';
 
     @ATTRS = split /,/, $self->attributes;
     return;
@@ -89,7 +92,7 @@ sub process_tree {
         my $max_length = max( map{$self->_length($lines[$_])} ($min_idx..$max_idx) );
         for my $idx ($min_idx..$max_idx) {
             my $idx_node = $all[$idx];
-            my $filler = $lines[$idx] =~ m/[─┌└├]$/ ? '─' : ' ';
+            my $filler = $lines[$idx] =~ m/[─┌└├╪]$/ ? '─' : ' ';
             $lines[$idx] .= $filler x ($max_length - $self->_length($lines[$idx]));
 
             my $min = ($idx == $min_idx);
@@ -98,11 +101,11 @@ sub process_tree {
                 $lines[$idx] .= $DRAW[$max][$min] . $self->node_to_string($node);
             } else {
                 if ($idx_node->parent != $node){
-                    $lines[$idx] .= $V;
+                    $lines[$idx] .= $VERT[$lines[$idx] =~ m/─$/ ? 1 : 0];
                 } else {
                     $lines[$idx] .= $SPACE[$max][$min];
                     if ($idx_node->is_leaf){
-                        $lines[$idx] .= $H . $self->node_to_string($idx_node);
+                        $lines[$idx] .= $HORIZ . $self->node_to_string($idx_node);
                     } else {
                         push @stack, $idx_node;
                     }
