@@ -74,7 +74,7 @@ sub process_document {
             }
             $add_to_the_last_bundle = 1 if $bundle_id eq $last_bundle_id;
             $last_bundle_id = $bundle_id;
-            $root->set_id(undef);
+            $root->set_sent_id(undef);
         }
 
         if ($self_zone ne 'keep'){
@@ -97,7 +97,7 @@ sub process_document {
                 }
             } else {
                 $bundle = $doc->create_bundle();
-                $bundle->set_id($last_bundle_id) if $last_bundle_id ne '';
+                $bundle->set_bundle_id($last_bundle_id) if $last_bundle_id ne '';
             }
         }
 

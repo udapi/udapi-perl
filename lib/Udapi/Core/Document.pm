@@ -46,9 +46,9 @@ sub add_tree {
         my $last_bundle = $self->{_bundles}[-1];
         if (!$last_bundle || $last_bundle->bundle_id ne $bundle_id){
             $last_bundle = $self->create_bundle();
-            $last_bundle->set_id($bundle_id);
+            $last_bundle->set_bundle_id($bundle_id);
         }
-        $root->set_id(undef);
+        $root->set_sent_id(undef);
         $last_bundle->add_tree($root);
     }
     return;
