@@ -29,16 +29,16 @@ sub BUILD {
 
     # $DRAW[bottom-most][top-most]
     my $line = '─' x $self->indent;
-    $HORIZ      = $line . '─';
+    $HORIZ      = $line . '╼';
     $DRAW[1][1] = $HORIZ;
-    $DRAW[1][0] = $line . '┘';
-    $DRAW[0][1] = $line . '┐';
-    $DRAW[0][0] = $line . '┤';
+    $DRAW[1][0] = $line . '┶';
+    $DRAW[0][1] = $line . '┮';
+    $DRAW[0][0] = $line . '┾';
 
     # $SPACE[bottom-most][top-most]
     my $space = ' ' x $self->indent;
-    $SPACE[1][0] = $space . '└';
-    $SPACE[0][1] = $space . '┌';
+    $SPACE[1][0] = $space . '╰';
+    $SPACE[0][1] = $space . '╭';
     $SPACE[0][0] = $space . '├';
 
     # $VERT[is_crossing]
@@ -92,7 +92,7 @@ sub process_tree {
         my $max_length = max( map{$self->_length($lines[$_])} ($min_idx..$max_idx) );
         for my $idx ($min_idx..$max_idx) {
             my $idx_node = $all[$idx];
-            my $filler = $lines[$idx] =~ m/[─┌└├╪]$/ ? '─' : ' ';
+            my $filler = $lines[$idx] =~ m/[─╭╰├╪]$/ ? '─' : ' ';
             $lines[$idx] .= $filler x ($max_length - $self->_length($lines[$idx]));
 
             my $min = ($idx == $min_idx);
@@ -148,7 +148,7 @@ sub node_to_string {
             }
         }
     }
-    return join ' ', @values;
+    return ' ' . join ' ', @values;
 }
 
 1;
@@ -175,36 +175,32 @@ Udapi::Block::Write::TextModeTrees - print legible dependency trees
 This block prints dependency trees in plain-text format.
 For example the following CoNLL-U file (with tabs instead of spaces)
 
- 1  The        the        DET   _ _ 2  det       _ _
- 2  third      third      ADJ   _ _ 5  nsubjpass _ _
- 3  was        be         AUX   _ _ 5  aux       _ _
- 4  being      be         AUX   _ _ 5  auxpass   _ _
- 5  run        run        VERB  _ _ 0  root      _ _
- 6  by         by         ADP   _ _ 8  case      _ _
- 7  the        the        DET   _ _ 8  det       _ _
- 9  of         of         ADP   _ _ 12 case      _ _
- 8  head       head       NOUN  _ _ 5  nmod      _ _
- 10 an         a          DET   _ _ 12 det       _ _
- 11 investment investment NOUN  _ _ 12 compound  _ _
- 12 firm       firm       NOUN  _ _ 8  nmod      _ SpaceAfter=No
- 13 .          .          PUNCT _ _ 5  punct     _ _
+  1  I     I     PRON  PRP Number=Sing|Person=1 2  nsubj     _ _
+  2  saw   see   VERB  VBD Tense=Past           0  root      _ _
+  3  a     a     DET   DT  Definite=Ind         4  det       _ _
+  4  dog   dog   NOUN  NN  Number=Sing          2  dobj      _ _
+  5  today today NOUN  NN  Number=Sing          2  nmod:tmod _ SpaceAfter=No
+  6  ,     ,     PUNCT ,   _                    2  punct     _ _
+  7  which which DET   WDT PronType=Rel         10 nsubj     _ _
+  8  was   be    VERB  VBD Person=3|Tense=Past  10 cop       _ _
+  9  a     a     DET   DT  Definite=Ind         10 det       _ _
+  10 boxer boxer NOUN  NN  Number=Sing          4  acl:relcl _ SpaceAfter=No
+  11 .     .     PUNCT .   _                    2  punct     _ _
 
 will be printed (with the default parameters) as
 
- ─┐
-  │   ┌──The DET det
-  │ ┌─┘third ADJ nsubjpass
-  │ ├──was AUX aux
-  │ ├──being AUX auxpass
-  └─┤run VERB root
-    │ ┌──by ADP case
-    │ ├──the DET det
-    ├─┤head NOUN nmod
-    │ │ ┌──of ADP case
-    │ │ ├──an DET det
-    │ │ ├──investment NOUN compound
-    │ └─┘firm NOUN nmod
-    └──. PUNCT punct
+  ─┮
+   │ ╭─╼ I PRON nsubj
+   ╰─┾ saw VERB root
+     │                        ╭─╼ a DET det
+     ├────────────────────────┾ dog NOUN dobj
+     ├─╼ today NOUN nmod:tmod │
+     ├─╼ , PUNCT punct        │
+     │                        │ ╭─╼ which DET nsubj
+     │                        │ ├─╼ was VERB cop
+     │                        │ ├─╼ a DET det
+     │                        ╰─┶ boxer NOUN acl:relcl
+     ╰─╼ . PUNCT punct
 
 This block's method C<process_tree> can be called on any node (not only root),
 which is useful for printing subtrees using C<$node-E<gt>print_subtree()>,
@@ -263,6 +259,6 @@ based on Treex block Write::TreesTXT by Matyáš Kopp
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright © 2016 by Institute of Formal and Applied Linguistics, Charles University in Prague
+Copyright © 2016-2017 by Institute of Formal and Applied Linguistics, Charles University in Prague
 
 This module is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
