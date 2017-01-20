@@ -101,7 +101,7 @@ sub process_tree {
                 $lines[$idx] .= $DRAW[$max][$min] . $self->node_to_string($node);
             } else {
                 if ($idx_node->parent != $node){
-                    $lines[$idx] .= $VERT[$lines[$idx] =~ m/─$/ ? 1 : 0];
+                    $lines[$idx] .= $VERT[$lines[$idx] =~ m/[─├]$/ ? 1 : 0];
                 } else {
                     $lines[$idx] .= $SPACE[$max][$min];
                     if ($idx_node->is_leaf){
@@ -201,6 +201,15 @@ will be printed (with the default parameters) as
      │                        │ ├─╼ a DET det
      │                        ╰─┶ boxer NOUN acl:relcl
      ╰─╼ . PUNCT punct
+
+Some non-projective trees cannot be printed witout crossing edges.
+TextModeTrees uses a special "bridge" symbol ─╪─ to mark this:
+
+  ─┮
+   │ ╭─╼ 1
+   ├─╪───┮ 2
+   ╰─┶ 3 │
+         ╰─╼ 4
 
 This block's method C<process_tree> can be called on any node (not only root),
 which is useful for printing subtrees using C<$node-E<gt>print_subtree()>,
