@@ -29,7 +29,7 @@ sub process_document {
             1;
         };
         if (!$ok) {
-            warn "Util::FingBug found a problem in bundle $bundle_no in block $block_name:\n<<$@>>\n";
+            warn "Util::FindBug found a problem in bundle $bundle_no in block $block_name:\n<<$@>>\n";
             warn "Printing a minimal example to '".$self->filename . "'\n";
             my $writer = Udapi::Block::Write::CoNLLU->new(to=>'-');
             my @orig_bundles = $doc->bundles;
