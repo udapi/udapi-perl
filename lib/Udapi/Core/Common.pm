@@ -28,7 +28,7 @@ use MooX::TypeTiny;
 use Types::Standard qw(Int Bool);
 
 sub has_ro {my $name = shift; has($name, is=>'ro', @_);};
-sub has_rw {my $name = shift; has($name, is=>'ro', writer => "set_$name", @_);};
+sub has_rw {my $name = shift; has($name, is=>'ro', writer => $name =~ /^_/ ? "_set$name" : "set_$name", @_);};
 1;
 END
     confess "Error in Udapi::Core::Common (probably a missing package):\n$@" if !$result;

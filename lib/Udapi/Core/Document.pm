@@ -14,6 +14,15 @@ sub new {
 
 sub bundles {@{$_[0]->{_bundles}};}
 
+sub trees {
+    my ($self) = @_;
+    my @trees;
+    for my $bundle (@{$self->{_bundles}}){
+        push @trees, $bundle->trees;
+    }
+    return @trees;
+}
+
 sub create_bundle {
     my ($self, $args) = @_;
     # TODO args->{before} args->{after}
